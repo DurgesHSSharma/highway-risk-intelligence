@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 2 complete (data foundation)
+## Status: Phase 4 complete (leakage-safe baseline ML)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -23,12 +23,27 @@ Phase 2 adds the data foundation for later ML work: a reproducible
 synthetic highway-project monthly-snapshot generator
 ([scripts/generate_dataset.py](scripts/generate_dataset.py)), a validation
 pipeline ([scripts/validate_dataset.py](scripts/validate_dataset.py)), and a
-metadata manifest of real public infrastructure documents. **No ML
-training, RAG, or LLM inference is implemented yet** — see
+metadata manifest of real public infrastructure documents — see
 [data/README.md](data/README.md) for what the data is and where it came
 from, and [docs/DATASET_REPORT.md](docs/DATASET_REPORT.md) /
 [docs/SYNTHETIC_DATA_METHODOLOGY.md](docs/SYNTHETIC_DATA_METHODOLOGY.md)
 for the dataset's statistics and generation methodology.
+
+Phase 3 adds EDA and leakage-safe feature engineering
+([scripts/eda_report.py](scripts/eda_report.py),
+[scripts/prepare_features.py](scripts/prepare_features.py)) — see
+[docs/EDA_REPORT.md](docs/EDA_REPORT.md) and
+[docs/FEATURE_ENGINEERING.md](docs/FEATURE_ENGINEERING.md).
+
+Phase 4 adds the first ML baseline and a reusable, leakage-safe
+train/validation/test framework: a project-level chronological split
+([scripts/data_split.py](scripts/data_split.py)) and Dummy/Logistic/Linear
+baseline models for all four prediction tasks
+([scripts/train_baseline_models.py](scripts/train_baseline_models.py)).
+**No tree-based models, SHAP, RAG, or LLM inference is implemented yet** —
+see [docs/TRAIN_VAL_TEST_STRATEGY.md](docs/TRAIN_VAL_TEST_STRATEGY.md) for
+the split methodology and [docs/BASELINE_MODEL_REPORT.md](docs/BASELINE_MODEL_REPORT.md)
+for the full results (performance on the synthetic prototype dataset only).
 
 ## Prerequisites
 
@@ -97,7 +112,34 @@ and runs the validation pipeline against it. See
 and [docs/SYNTHETIC_DATA_METHODOLOGY.md](docs/SYNTHETIC_DATA_METHODOLOGY.md)
 for how it's generated (including leakage prevention).
 
-Run the Phase 2 test suite (from the repo root):
+## Feature engineering (Phase 3)
+
+```bash
+cd scripts
+../backend/.venv/Scripts/python.exe eda_report.py
+../backend/.venv/Scripts/python.exe prepare_features.py
+```
+
+Regenerates `docs/EDA_REPORT.md`'s figures and
+`data/processed/{delay,cost}_features.csv`. See
+[docs/FEATURE_ENGINEERING.md](docs/FEATURE_ENGINEERING.md) for the feature
+dictionary.
+
+## Baseline models (Phase 4)
+
+```bash
+cd scripts
+../backend/.venv/Scripts/python.exe train_baseline_models.py
+```
+
+Runs the project-level leakage-safe split, trains Dummy/Logistic/Linear
+baselines for all four tasks, and writes
+`models/metrics/baseline_metrics.json` and the fitted pipelines under
+`models/baseline/`. See
+[docs/TRAIN_VAL_TEST_STRATEGY.md](docs/TRAIN_VAL_TEST_STRATEGY.md) and
+[docs/BASELINE_MODEL_REPORT.md](docs/BASELINE_MODEL_REPORT.md).
+
+Run the full test suite (from the repo root):
 
 ```bash
 ./backend/.venv/Scripts/python.exe -m pytest -v
