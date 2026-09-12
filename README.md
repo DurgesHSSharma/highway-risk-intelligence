@@ -11,14 +11,24 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 1 complete
+## Status: Phase 2 complete (data foundation)
 
-Phase 1 delivers the project skeleton only: a FastAPI backend, a React/Vite
-frontend, and a verified health-check connection between them. **No ML, no
-RAG, no LLM inference is implemented yet** — see
-[docs/architecture.md](docs/architecture.md) for what's in place and what's
-deliberately deferred, and [docs/local_llm_feasibility.md](docs/local_llm_feasibility.md)
-for the local-LLM hardware assessment that will inform Phase 2.
+Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
+frontend, and a verified health-check connection between them — see
+[docs/architecture.md](docs/architecture.md), and
+[docs/local_llm_feasibility.md](docs/local_llm_feasibility.md) for the
+local-LLM hardware assessment.
+
+Phase 2 adds the data foundation for later ML work: a reproducible
+synthetic highway-project monthly-snapshot generator
+([scripts/generate_dataset.py](scripts/generate_dataset.py)), a validation
+pipeline ([scripts/validate_dataset.py](scripts/validate_dataset.py)), and a
+metadata manifest of real public infrastructure documents. **No ML
+training, RAG, or LLM inference is implemented yet** — see
+[data/README.md](data/README.md) for what the data is and where it came
+from, and [docs/DATASET_REPORT.md](docs/DATASET_REPORT.md) /
+[docs/SYNTHETIC_DATA_METHODOLOGY.md](docs/SYNTHETIC_DATA_METHODOLOGY.md)
+for the dataset's statistics and generation methodology.
 
 ## Prerequisites
 
@@ -70,6 +80,28 @@ cd scripts
 
 Reports real measured CPU/RAM/disk specs, used to ground the local-LLM
 feasibility assessment in [docs/local_llm_feasibility.md](docs/local_llm_feasibility.md).
+
+## Data foundation (Phase 2)
+
+```bash
+cd scripts
+../backend/.venv/Scripts/python.exe generate_dataset.py
+../backend/.venv/Scripts/python.exe validate_dataset.py
+```
+
+Regenerates the synthetic dataset at
+`data/synthetic/highway_project_snapshots.csv` (fixed seed, reproducible)
+and runs the validation pipeline against it. See
+[data/README.md](data/README.md) for provenance,
+[docs/DATASET_REPORT.md](docs/DATASET_REPORT.md) for dataset statistics,
+and [docs/SYNTHETIC_DATA_METHODOLOGY.md](docs/SYNTHETIC_DATA_METHODOLOGY.md)
+for how it's generated (including leakage prevention).
+
+Run the Phase 2 test suite (from the repo root):
+
+```bash
+./backend/.venv/Scripts/python.exe -m pytest -v
+```
 
 ## Project layout
 
