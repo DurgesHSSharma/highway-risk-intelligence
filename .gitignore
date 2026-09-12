@@ -35,7 +35,12 @@ Thumbs.db
 *.db
 *.sqlite3
 /data/raw/
-/data/processed/
+# Phase 3 ML-ready feature datasets ARE committed (same convention as the
+# Phase 2 synthetic dataset) for reproducibility/review; everything else
+# under data/processed/ stays ignored.
+/data/processed/*
+!/data/processed/delay_features.csv
+!/data/processed/cost_features.csv
 *.gguf
 *.bin
 *.pt

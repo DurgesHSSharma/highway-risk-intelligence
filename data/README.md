@@ -13,6 +13,9 @@ data/
 ├── README.md                        (this file)
 ├── synthetic/
 │   └── highway_project_snapshots.csv   SYNTHETIC — ML training dataset
+├── processed/
+│   ├── delay_features.csv              DERIVED DATA — Phase 3 ML-ready delay features
+│   └── cost_features.csv               DERIVED DATA — Phase 3 ML-ready cost-overrun features
 └── documents/
     ├── metadata.csv                     REAL PUBLIC DATA — source manifest
     └── raw/
@@ -50,6 +53,33 @@ row = one `(project_id, reporting_month)` observation.
   [docs/DATASET_REPORT.md](../docs/DATASET_REPORT.md) "Limitations" and
   [docs/SYNTHETIC_DATA_METHODOLOGY.md](../docs/SYNTHETIC_DATA_METHODOLOGY.md)
   section 14 for what this data cannot prove.
+
+## `processed/` — DERIVED DATA (Phase 3 ML-ready features)
+
+Leakage-audited, feature-engineered datasets derived entirely from
+`synthetic/highway_project_snapshots.csv` by
+[`scripts/prepare_features.py`](../scripts/prepare_features.py). Same
+provenance as the synthetic dataset (100% synthetic, never real project
+data) — labeled **DERIVED DATA** because every value is either a raw
+column carried through or a documented transformation of one.
+
+- **How to regenerate**:
+  ```bash
+  cd scripts
+  ../backend/.venv/Scripts/python.exe prepare_features.py
+  ```
+- **Full documentation**: [docs/EDA_REPORT.md](../docs/EDA_REPORT.md) (the
+  exploratory analysis behind the design decisions) and
+  [docs/FEATURE_ENGINEERING.md](../docs/FEATURE_ENGINEERING.md) (the
+  feature dictionary, leakage audit, and recommended Phase 4 split
+  strategy).
+- **Intended use**: Phase 4+ ML model training/evaluation. Both files
+  preserve `project_id` and `reporting_month` and share the same 45
+  predictor columns; they differ only in which target columns are
+  attached (`delay_features.csv`: `final_delay_days`,
+  `significant_delay`; `cost_features.csv`: `final_cost_overrun_pct`,
+  `cost_overrun`) to prevent one task's target leaking into the other's
+  feature set.
 
 ## `documents/metadata.csv` — REAL PUBLIC DATA (manifest)
 
