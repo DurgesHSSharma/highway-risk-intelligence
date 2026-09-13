@@ -1,9 +1,27 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.db.base import create_all
+from app.ml.registry import load_models
+from app.routers import predictions, projects
 
-app = FastAPI(title=settings.app_name)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Table creation is idempotent and never touches existing data -- the
+    # actual project/snapshot rows come from scripts/load_db.py, not here.
+    create_all()
+    # Fails loudly (raises, aborting startup) if a required Phase 4/5 model
+    # artifact is missing -- see app/ml/registry.py. Models are loaded once
+    # here, never per-request.
+    load_models()
+    yield
+
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -12,6 +30,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(projects.router)
+app.include_router(predictions.router)
 
 
 @app.get("/")

@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 5 complete (tree models, model comparison, SHAP explainability)
+## Status: Phase 6 complete (SQLite data layer and FastAPI ML prediction service)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -60,6 +60,25 @@ full comparison (including overfitting analysis and suspicious-performance
 checks) and [docs/SHAP_EXPLAINABILITY_REPORT.md](docs/SHAP_EXPLAINABILITY_REPORT.md)
 for the explainability results (performance/explanations on the synthetic
 prototype dataset only).
+
+Phase 6 adds a SQLite data layer and a FastAPI ML prediction service, with
+**no new modeling** — it exposes the frozen Phase 2 dataset and the
+already-trained Phase 4/5 models via HTTP. `scripts/load_db.py` loads
+`data/synthetic/highway_project_snapshots.csv` into `projects` /
+`project_snapshots` tables (SQLAlchemy models in
+[backend/app/db/models.py](backend/app/db/models.py)); read-only CRUD
+endpoints (`GET /projects`, `/projects/{id}`, `/projects/{id}/snapshots`,
+`/projects/{id}/snapshots/{reporting_month}`) and a prediction endpoint
+(`GET /projects/{id}/predict`) were added to the existing FastAPI app. The
+prediction endpoint uses the Phase 5-recommended model per task (Random
+Forest for delay classification, XGBoost for delay regression, and the
+Phase 4 baseline for both cost tasks — verified against
+[docs/MODEL_COMPARISON_REPORT.md](docs/MODEL_COMPARISON_REPORT.md), not
+assumed) and returns recorded actual outcomes instead of a prediction for
+terminal snapshots. See [docs/API_AND_DATABASE.md](docs/API_AND_DATABASE.md)
+and [docs/MODEL_SERVING.md](docs/MODEL_SERVING.md). **No RAG, SHAP-serving,
+dashboard/frontend integration, authentication, or what-if simulator is
+implemented yet.**
 
 ## Prerequisites
 
@@ -178,6 +197,37 @@ Run the full test suite (from the repo root):
 ```bash
 ./backend/.venv/Scripts/python.exe -m pytest -v
 ```
+
+## SQLite data layer and prediction API (Phase 6)
+
+Load the database (idempotent — safe to re-run; clears and reloads both
+tables from the CSV each time):
+
+```bash
+./backend/.venv/Scripts/python.exe -m scripts.load_db
+```
+
+Start the API (same command as Phase 1 — the existing app was extended,
+not replaced):
+
+```bash
+cd backend
+./.venv/Scripts/python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Starting the API before the database has been loaded is fine — the tables
+are created automatically and CRUD endpoints just return empty results —
+but if a required Phase 4/5 model artifact under `models/` is missing, the
+app refuses to start (with a clear error naming the missing file) rather
+than substituting another model.
+
+Try it: `GET /projects`, `GET /projects/HRI-0001`,
+`GET /projects/HRI-0001/snapshots`,
+`GET /projects/HRI-0001/predict?reporting_month=2023-04`, or open
+`http://127.0.0.1:8000/docs` for interactive Swagger docs. See
+[docs/API_AND_DATABASE.md](docs/API_AND_DATABASE.md) for the full schema
+and endpoint reference and [docs/MODEL_SERVING.md](docs/MODEL_SERVING.md)
+for the model-serving design.
 
 ## Project layout
 
