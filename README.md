@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 6 complete (SQLite data layer and FastAPI ML prediction service)
+## Status: Phase 7 complete (PDF ingestion pipeline with OCR fallback and chunking)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -79,6 +79,22 @@ terminal snapshots. See [docs/API_AND_DATABASE.md](docs/API_AND_DATABASE.md)
 and [docs/MODEL_SERVING.md](docs/MODEL_SERVING.md). **No RAG, SHAP-serving,
 dashboard/frontend integration, authentication, or what-if simulator is
 implemented yet.**
+
+Phase 7 adds a reusable PDF ingestion pipeline
+([scripts/ingest_documents.py](scripts/ingest_documents.py)) that turns the
+real public highway-sector PDFs under `data/documents/raw/` into a
+citation-ready, chunk-level dataset
+(`data/processed/document_chunks.csv`): PyMuPDF native-text extraction,
+a documented pdfplumber table-aware fallback, a Tesseract OCR fallback
+(genuinely exercised on real scanned/image pages in the corpus, not just
+implemented), best-effort heading detection, and deterministic
+paragraph/sentence-aware chunking. Three additional real government PDFs
+(CAG, NHAI, MoRTH) were downloaded in this phase, verified byte-exact
+against their HTTP `Content-Length`; two PIB press releases remain
+unavailable (blocked by bot-protection, and not direct PDF links regardless
+— see [docs/DOCUMENT_INGESTION.md](docs/DOCUMENT_INGESTION.md)). **This
+phase produces a chunk dataset only — no embeddings, vector store,
+retrieval, or LLM integration is implemented yet.**
 
 ## Prerequisites
 
@@ -228,6 +244,26 @@ Try it: `GET /projects`, `GET /projects/HRI-0001`,
 [docs/API_AND_DATABASE.md](docs/API_AND_DATABASE.md) for the full schema
 and endpoint reference and [docs/MODEL_SERVING.md](docs/MODEL_SERVING.md)
 for the model-serving design.
+
+## Document ingestion pipeline (Phase 7)
+
+Requires Tesseract OCR installed and on `PATH` (or at the default Windows
+install path) for the OCR fallback to run — install the free, open-source
+[UB-Mannheim Tesseract build](https://github.com/UB-Mannheim/tesseract)
+(`winget install --id UB-Mannheim.TesseractOCR -e` on Windows). Ingestion
+still runs without it for documents that never need OCR, but raises a
+clear error if a page actually requires OCR and Tesseract is unavailable.
+
+```bash
+./backend/.venv/Scripts/python.exe -m scripts.ingest_documents
+```
+
+Reads `data/documents/metadata.csv`, verifies every catalogued PDF is
+present under `data/documents/raw/`, and writes
+`data/processed/document_chunks.csv`. See
+[docs/DOCUMENT_INGESTION.md](docs/DOCUMENT_INGESTION.md) for the extraction
+heuristics (PyMuPDF primary, pdfplumber table-aware fallback, Tesseract OCR
+fallback), the chunking strategy, and the actual run statistics.
 
 ## Project layout
 

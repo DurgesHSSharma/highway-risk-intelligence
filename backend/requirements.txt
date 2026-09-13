@@ -23,6 +23,11 @@ shap==0.52.0
 # Phase 6: SQLite data layer and FastAPI ML prediction service
 SQLAlchemy==2.0.52
 
+# Phase 7: PDF ingestion pipeline (parsing, table extraction, OCR fallback)
+PyMuPDF==1.28.2
+pdfplumber==0.11.10
+pytesseract==0.3.13
+
 # Testing
 pytest==8.3.3
 httpx==0.27.2

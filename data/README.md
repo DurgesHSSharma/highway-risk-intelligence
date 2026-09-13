@@ -15,11 +15,15 @@ data/
 │   └── highway_project_snapshots.csv   SYNTHETIC — ML training dataset
 ├── processed/
 │   ├── delay_features.csv              DERIVED DATA — Phase 3 ML-ready delay features
-│   └── cost_features.csv               DERIVED DATA — Phase 3 ML-ready cost-overrun features
+│   ├── cost_features.csv               DERIVED DATA — Phase 3 ML-ready cost-overrun features
+│   └── document_chunks.csv             DERIVED DATA — Phase 7 citation-ready document chunks
 └── documents/
     ├── metadata.csv                     REAL PUBLIC DATA — source manifest
     └── raw/
-        └── prs_dfg_2025-26_road_transport_highways.pdf   REAL PUBLIC DATA (actually downloaded)
+        ├── prs_dfg_2025-26_road_transport_highways.pdf        REAL PUBLIC DATA (downloaded Phase 2)
+        ├── cag_bharatmala_phase1_performance_audit_2023.pdf   REAL PUBLIC DATA (downloaded Phase 7)
+        ├── nhai_annual_report_2022-23.pdf                     REAL PUBLIC DATA (downloaded Phase 7)
+        └── morth_annual_report_2024-25.pdf                    REAL PUBLIC DATA (downloaded Phase 7)
 ```
 
 ## `synthetic/highway_project_snapshots.csv` — SYNTHETIC DATA
@@ -81,29 +85,51 @@ column carried through or a documented transformation of one.
   `cost_overrun`) to prevent one task's target leaking into the other's
   feature set.
 
+### `processed/document_chunks.csv` — DERIVED DATA (Phase 7 document chunks)
+
+A citation-ready, chunk-level dataset derived entirely from the four real
+PDFs under `documents/raw/` by
+[`scripts/ingest_documents.py`](../scripts/ingest_documents.py) — labeled
+**DERIVED DATA** because it is a documented transformation (PDF parsing +
+OCR fallback + deterministic chunking) of the real source PDFs, not itself
+a primary government document.
+
+- **How to regenerate**:
+  ```bash
+  ./backend/.venv/Scripts/python.exe -m scripts.ingest_documents
+  ```
+- **Full documentation**: [docs/DOCUMENT_INGESTION.md](../docs/DOCUMENT_INGESTION.md)
+  (extraction heuristics, OCR trigger/quality rules, chunking strategy,
+  actual run statistics, and disclosed limitations).
+- **Intended use**: a future retrieval-system phase. Phase 7 itself stops
+  at this chunk dataset — nothing in this repo yet queries, embeds, or
+  searches it.
+
 ## `documents/metadata.csv` — REAL PUBLIC DATA (manifest)
 
 A source manifest of genuinely real, publicly accessible government/
 legislative-research documents about the highway sector (CAG, NHAI, MoRTH,
-PIB, PRS Legislative Research), for use as a **future** RAG document corpus
-(Phase 2 only builds the manifest — no RAG, embeddings, OCR, or chunking
-is implemented yet).
+PIB, PRS Legislative Research), used as the real-document corpus for the
+Phase 7 ingestion pipeline (and a **future** RAG system — Phase 7 stops at
+chunk-level extraction, no RAG/embeddings yet).
 
 Every `source_url` in that file was checked for real HTTP reachability
-(`curl -I`) and/or fetched during this phase — see the `verification_method`
-and `verification_date` columns for exactly how each one was confirmed.
-One document (PRS Legislative Research's Demand for Grants 2025-26
-analysis, `DOC-004`) was actually downloaded and is committed at
-`documents/raw/prs_dfg_2025-26_road_transport_highways.pdf`. The other five
-are large (7.7-19.5 MB) government PDFs whose live URL, content-type, and
-size were verified via HTTP but which were **not** downloaded into the repo,
-to keep it lightweight — `local_filename` is blank for those, and this is
-recorded explicitly rather than implied. Two PIB press releases could not
-be fetched by any tool used in this session (HTTP 401/403 — PIB's site
-blocks non-browser requests); their URLs are real (located via web search
-on the official `pib.gov.in` domain) but their content was not
-independently verified beyond the search snippet. No document, filename, or
-URL in this manifest was invented.
+(`curl -I`) and/or fetched during Phase 2 and Phase 7 — see the
+`verification_method` and `verification_date` columns for exactly how each
+one was confirmed. Four documents are downloaded and committed under
+`documents/raw/`: `prs_dfg_2025-26_road_transport_highways.pdf` (Phase 2),
+and `cag_bharatmala_phase1_performance_audit_2023.pdf`,
+`nhai_annual_report_2022-23.pdf`, `morth_annual_report_2024-25.pdf` (all
+three downloaded in Phase 7, byte-exact to their HTTP `Content-Length` and
+verified as genuine PDFs via their magic bytes). The remaining two are PIB
+press releases that could not be fetched by any tool used across both
+phases (HTTP 401 — PIB's site blocks non-browser requests, confirmed again
+in Phase 7 with a browser-like User-Agent); their URLs are real (located
+via web search on the official `pib.gov.in` domain) but their content was
+not independently verified beyond the search snippet, and — disclosed in
+Phase 7 — both URLs are HTML press-release pages rather than direct PDF
+links, so they would not be ingestible PDFs even if fetch succeeded. No
+document, filename, or URL in this manifest was invented.
 
 ## Provenance labels used throughout this project
 
