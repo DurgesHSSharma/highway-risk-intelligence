@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 4 complete (leakage-safe baseline ML)
+## Status: Phase 5 complete (tree models, model comparison, SHAP explainability)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -40,10 +40,26 @@ train/validation/test framework: a project-level chronological split
 ([scripts/data_split.py](scripts/data_split.py)) and Dummy/Logistic/Linear
 baseline models for all four prediction tasks
 ([scripts/train_baseline_models.py](scripts/train_baseline_models.py)).
-**No tree-based models, SHAP, RAG, or LLM inference is implemented yet** —
-see [docs/TRAIN_VAL_TEST_STRATEGY.md](docs/TRAIN_VAL_TEST_STRATEGY.md) for
+See [docs/TRAIN_VAL_TEST_STRATEGY.md](docs/TRAIN_VAL_TEST_STRATEGY.md) for
 the split methodology and [docs/BASELINE_MODEL_REPORT.md](docs/BASELINE_MODEL_REPORT.md)
-for the full results (performance on the synthetic prototype dataset only).
+for the full baseline results (performance on the synthetic prototype
+dataset only).
+
+Phase 5 adds Random Forest and XGBoost models for all four tasks, trained
+and evaluated on the identical frozen Phase 4 split
+([scripts/train_tree_models.py](scripts/train_tree_models.py)), plus SHAP
+explainability for the strongest tree model per task
+([scripts/explain_models.py](scripts/explain_models.py)). Tree models beat
+the Phase 4 baseline for 2 of 4 tasks (delay classification, delay
+regression); the Phase 4 baseline remains the honestly recommended model
+for the other 2 (cost classification, cost regression), where tree models
+did not improve on it. **No prediction API, dashboard integration, RAG, or
+LLM inference is implemented yet.** See
+[docs/MODEL_COMPARISON_REPORT.md](docs/MODEL_COMPARISON_REPORT.md) for the
+full comparison (including overfitting analysis and suspicious-performance
+checks) and [docs/SHAP_EXPLAINABILITY_REPORT.md](docs/SHAP_EXPLAINABILITY_REPORT.md)
+for the explainability results (performance/explanations on the synthetic
+prototype dataset only).
 
 ## Prerequisites
 
@@ -138,6 +154,24 @@ baselines for all four tasks, and writes
 `models/baseline/`. See
 [docs/TRAIN_VAL_TEST_STRATEGY.md](docs/TRAIN_VAL_TEST_STRATEGY.md) and
 [docs/BASELINE_MODEL_REPORT.md](docs/BASELINE_MODEL_REPORT.md).
+
+## Tree models and SHAP explainability (Phase 5)
+
+Run from the repo root (these two scripts import `scripts.*` as a package,
+so they must be run with `-m`, unlike the `cd scripts` scripts above):
+
+```bash
+./backend/.venv/Scripts/python.exe -m scripts.train_tree_models
+./backend/.venv/Scripts/python.exe -m scripts.explain_models
+```
+
+Trains Random Forest + XGBoost for all four tasks on the identical frozen
+Phase 4 split, writes `models/metrics/tree_metrics.json` and the fitted
+pipelines under `models/random_forest/` / `models/xgboost/`, then generates
+SHAP global summary plots and local (high/low-prediction) waterfall plots
+under `docs/artifacts/`. See
+[docs/MODEL_COMPARISON_REPORT.md](docs/MODEL_COMPARISON_REPORT.md) and
+[docs/SHAP_EXPLAINABILITY_REPORT.md](docs/SHAP_EXPLAINABILITY_REPORT.md).
 
 Run the full test suite (from the repo root):
 

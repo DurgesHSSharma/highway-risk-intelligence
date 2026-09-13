@@ -1,0 +1,1452 @@
+{
+  "run_metadata": {
+    "generated_at_utc": "2026-09-13T14:57:51.310966+00:00",
+    "seed": 42,
+    "train_frac": 0.7,
+    "val_frac": 0.15,
+    "python_version": "3.12.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "sklearn_version": "1.5.2",
+    "xgboost_version": "3.4.1",
+    "pandas_version": "2.2.3",
+    "numpy_version": "2.1.3",
+    "input_datasets": {
+      "delay_features.csv": "data\\processed\\delay_features.csv",
+      "cost_features.csv": "data\\processed\\cost_features.csv"
+    },
+    "predictor_columns": [
+      "project_length_km",
+      "original_contract_value_inr_cr",
+      "planned_duration_months",
+      "months_since_start",
+      "state",
+      "project_type",
+      "contractor",
+      "planned_physical_progress_pct",
+      "actual_physical_progress_pct",
+      "physical_progress_variance_pct",
+      "planned_financial_progress_pct",
+      "actual_financial_progress_pct",
+      "financial_progress_variance_pct",
+      "planned_cost_to_date_inr_cr",
+      "actual_expenditure_inr_cr",
+      "actual_cost_to_date_inr_cr",
+      "material_cost_inr_cr",
+      "labour_cost_inr_cr",
+      "equipment_cost_inr_cr",
+      "variation_cost_inr_cr",
+      "delay_related_cost_inr_cr",
+      "contractor_productivity_factor",
+      "land_acquisition_delay_days",
+      "utility_shifting_delay_days",
+      "environment_clearance_delay_days",
+      "material_delay_days",
+      "labour_shortage_days",
+      "equipment_unavailability_days",
+      "weather_disruption_days",
+      "traffic_diversion_delay_days",
+      "design_change_delay_days",
+      "approval_delay_days",
+      "expenditure_gap_inr_cr",
+      "cost_tracking_gap_inr_cr",
+      "delay_factor_count",
+      "delay_factor_severity",
+      "project_age_ratio",
+      "months_to_planned_completion",
+      "schedule_pressure",
+      "progress_efficiency",
+      "cost_growth_rate",
+      "recent_progress_trend_3m",
+      "recent_cost_trend_3m",
+      "consecutive_underperforming_months",
+      "recent_adverse_events_3m"
+    ],
+    "n_predictor_columns": 45,
+    "numeric_predictor_columns": [
+      "project_length_km",
+      "original_contract_value_inr_cr",
+      "planned_duration_months",
+      "months_since_start",
+      "planned_physical_progress_pct",
+      "actual_physical_progress_pct",
+      "physical_progress_variance_pct",
+      "planned_financial_progress_pct",
+      "actual_financial_progress_pct",
+      "financial_progress_variance_pct",
+      "planned_cost_to_date_inr_cr",
+      "actual_expenditure_inr_cr",
+      "actual_cost_to_date_inr_cr",
+      "material_cost_inr_cr",
+      "labour_cost_inr_cr",
+      "equipment_cost_inr_cr",
+      "variation_cost_inr_cr",
+      "delay_related_cost_inr_cr",
+      "contractor_productivity_factor",
+      "land_acquisition_delay_days",
+      "utility_shifting_delay_days",
+      "environment_clearance_delay_days",
+      "material_delay_days",
+      "labour_shortage_days",
+      "equipment_unavailability_days",
+      "weather_disruption_days",
+      "traffic_diversion_delay_days",
+      "design_change_delay_days",
+      "approval_delay_days",
+      "expenditure_gap_inr_cr",
+      "cost_tracking_gap_inr_cr",
+      "delay_factor_count",
+      "delay_factor_severity",
+      "project_age_ratio",
+      "months_to_planned_completion",
+      "schedule_pressure",
+      "progress_efficiency",
+      "cost_growth_rate",
+      "recent_progress_trend_3m",
+      "recent_cost_trend_3m",
+      "consecutive_underperforming_months",
+      "recent_adverse_events_3m"
+    ],
+    "categorical_predictor_columns": [
+      "state",
+      "project_type",
+      "contractor"
+    ],
+    "split_metadata": {
+      "delay_features.csv": {
+        "seed": 42,
+        "train_frac": 0.7,
+        "val_frac": 0.15,
+        "test_frac": 0.15,
+        "split_rule": "Project-level chronological cohort split: all projects ordered by planned_start_date (ties on an identical start month broken by a seeded random draw, seed=42); the earliest 70% of projects assigned to train, the next 15% to validation, and the most-recently-started 15% to test. Assignment never used any outcome/target value.",
+        "raw_dataset_path": "C:\\Projects\\highway-risk-intelligence\\data\\synthetic\\highway_project_snapshots.csv",
+        "terminal_snapshot_excluded": true,
+        "n_projects_total": 400,
+        "n_projects_train": 280,
+        "n_projects_validation": 60,
+        "n_projects_test": 60,
+        "n_rows_train": 5834,
+        "n_rows_validation": 1234,
+        "n_rows_test": 1272,
+        "n_terminal_rows_total": 400,
+        "n_terminal_projects_total": 400,
+        "n_terminal_rows_excluded_train": 280,
+        "n_terminal_rows_excluded_validation": 60,
+        "n_terminal_rows_excluded_test": 60,
+        "planned_start_date_range_train": [
+          "2019-01-01",
+          "2022-11-01"
+        ],
+        "planned_start_date_range_validation": [
+          "2022-11-01",
+          "2023-08-01"
+        ],
+        "planned_start_date_range_test": [
+          "2023-09-01",
+          "2024-06-01"
+        ],
+        "reporting_month_range_train": [
+          "2019-02",
+          "2028-01"
+        ],
+        "reporting_month_range_validation": [
+          "2022-12",
+          "2028-12"
+        ],
+        "reporting_month_range_test": [
+          "2023-10",
+          "2029-02"
+        ]
+      },
+      "cost_features.csv": {
+        "seed": 42,
+        "train_frac": 0.7,
+        "val_frac": 0.15,
+        "test_frac": 0.15,
+        "split_rule": "Project-level chronological cohort split: all projects ordered by planned_start_date (ties on an identical start month broken by a seeded random draw, seed=42); the earliest 70% of projects assigned to train, the next 15% to validation, and the most-recently-started 15% to test. Assignment never used any outcome/target value.",
+        "raw_dataset_path": "C:\\Projects\\highway-risk-intelligence\\data\\synthetic\\highway_project_snapshots.csv",
+        "terminal_snapshot_excluded": true,
+        "n_projects_total": 400,
+        "n_projects_train": 280,
+        "n_projects_validation": 60,
+        "n_projects_test": 60,
+        "n_rows_train": 5834,
+        "n_rows_validation": 1234,
+        "n_rows_test": 1272,
+        "n_terminal_rows_total": 400,
+        "n_terminal_projects_total": 400,
+        "n_terminal_rows_excluded_train": 280,
+        "n_terminal_rows_excluded_validation": 60,
+        "n_terminal_rows_excluded_test": 60,
+        "planned_start_date_range_train": [
+          "2019-01-01",
+          "2022-11-01"
+        ],
+        "planned_start_date_range_validation": [
+          "2022-11-01",
+          "2023-08-01"
+        ],
+        "planned_start_date_range_test": [
+          "2023-09-01",
+          "2024-06-01"
+        ],
+        "reporting_month_range_train": [
+          "2019-02",
+          "2028-01"
+        ],
+        "reporting_month_range_validation": [
+          "2022-12",
+          "2028-12"
+        ],
+        "reporting_month_range_test": [
+          "2023-10",
+          "2029-02"
+        ]
+      }
+    },
+    "preprocessing": {
+      "numeric": "SimpleImputer(strategy='median') fit on train only, then StandardScaler() fit on train only",
+      "categorical": "SimpleImputer(strategy='constant', fill_value='Unknown') then OneHotEncoder(handle_unknown='ignore'), both fit on train only",
+      "fit_scope": "All preprocessing is fit exclusively inside each Pipeline's .fit(X_train, y_train) call; validation/test are only ever .transform()-ed.",
+      "note": "Identical ColumnTransformer definition (scripts.train_baseline_models.build_preprocessor) reused unchanged from Phase 4."
+    },
+    "hyperparameter_tuning": {
+      "method": "small explicit validation-only candidate list (no grid/random search library)",
+      "n_candidates_per_model_family": 3,
+      "selection_rule": "Among candidates whose validation score is within 0.005 (classification, ROC-AUC) / 0.01 (regression, R^2) of the best validation score, the candidate with the smallest (train_metric - validation_metric) gap is selected -- ties broken toward fewer n_estimators. Test data was never used in this selection.",
+      "candidate_configs": {
+        "random_forest_classifier": [
+          {
+            "n_estimators": 200,
+            "max_depth": null,
+            "min_samples_leaf": 1
+          },
+          {
+            "n_estimators": 200,
+            "max_depth": 8,
+            "min_samples_leaf": 5
+          },
+          {
+            "n_estimators": 400,
+            "max_depth": null,
+            "min_samples_leaf": 5
+          }
+        ],
+        "random_forest_regressor": [
+          {
+            "n_estimators": 200,
+            "max_depth": null,
+            "min_samples_leaf": 1
+          },
+          {
+            "n_estimators": 200,
+            "max_depth": 8,
+            "min_samples_leaf": 5
+          },
+          {
+            "n_estimators": 400,
+            "max_depth": null,
+            "min_samples_leaf": 5
+          }
+        ],
+        "xgboost_classifier": [
+          {
+            "n_estimators": 200,
+            "max_depth": 3,
+            "learning_rate": 0.1
+          },
+          {
+            "n_estimators": 200,
+            "max_depth": 5,
+            "learning_rate": 0.05
+          },
+          {
+            "n_estimators": 400,
+            "max_depth": 3,
+            "learning_rate": 0.05
+          }
+        ],
+        "xgboost_regressor": [
+          {
+            "n_estimators": 200,
+            "max_depth": 3,
+            "learning_rate": 0.1
+          },
+          {
+            "n_estimators": 200,
+            "max_depth": 5,
+            "learning_rate": 0.05
+          },
+          {
+            "n_estimators": 400,
+            "max_depth": 3,
+            "learning_rate": 0.05
+          }
+        ]
+      }
+    },
+    "suspicious_performance_thresholds": {
+      "classification_roc_auc": 0.95,
+      "regression_r2": 0.85
+    },
+    "overfitting_gap_thresholds": {
+      "classification_roc_auc_train_minus_test": 0.15,
+      "regression_r2_train_minus_test": 0.15
+    },
+    "reproducibility": {
+      "seed": 42,
+      "note": "RandomForest(n_jobs=-1) and XGBoost(n_jobs=-1) are deterministic given a fixed random_state/seed on a fixed dataset in this environment (scikit-learn derives per-tree seeds from random_state independent of thread scheduling; XGBoost's histogram tree method with a fixed seed is deterministic on a single machine/run). Exact bit-for-bit floating point equality across different machines/library versions is not guaranteed; this repo's reproducibility test (tests/test_train_tree_models.py) tolerates the differences that can arise from parallel floating-point summation order by asserting metric equality to 1e-9, not raw prediction array equality."
+    },
+    "baseline_comparison_source": "models\\metrics\\baseline_metrics.json"
+  },
+  "tasks": {
+    "delay_classification": {
+      "task_type": "classification",
+      "label": "Task A: Significant Delay Classification",
+      "target": "significant_delay",
+      "n_train_rows": 5834,
+      "n_validation_rows": 1234,
+      "n_test_rows": 1272,
+      "models": {
+        "random_forest": {
+          "selection_metric": "roc_auc",
+          "selection_epsilon": 0.005,
+          "selected_config": {
+            "n_estimators": 200,
+            "max_depth": 8,
+            "min_samples_leaf": 5
+          },
+          "candidates_tried": [
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": null,
+                "min_samples_leaf": 1
+              },
+              "train_metric": 1.0,
+              "validation_metric": 0.95688806215122,
+              "train_minus_validation_gap": 0.04311193784877998
+            },
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 8,
+                "min_samples_leaf": 5
+              },
+              "train_metric": 0.9867411070688019,
+              "validation_metric": 0.9538406827880512,
+              "train_minus_validation_gap": 0.032900424280750684
+            },
+            {
+              "config": {
+                "n_estimators": 400,
+                "max_depth": null,
+                "min_samples_leaf": 5
+              },
+              "train_metric": 0.9993171533809241,
+              "validation_metric": 0.9553041908305067,
+              "train_minus_validation_gap": 0.04401296255041742
+            }
+          ],
+          "artifact_path": "models\\random_forest\\delay_classification_random_forest.joblib",
+          "train": {
+            "accuracy": 0.942063764141241,
+            "precision": 0.9449709568939162,
+            "recall": 0.9513696522006772,
+            "f1": 0.948159509202454,
+            "confusion_matrix": [
+              [
+                2405,
+                180
+              ],
+              [
+                158,
+                3091
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9867411070688019,
+            "pr_auc": 0.9898851499516228
+          },
+          "validation": {
+            "accuracy": 0.8557536466774717,
+            "precision": 0.9309815950920245,
+            "recall": 0.8202702702702702,
+            "f1": 0.8721264367816092,
+            "confusion_matrix": [
+              [
+                449,
+                45
+              ],
+              [
+                133,
+                607
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9538406827880512,
+            "pr_auc": 0.9695687887342606
+          },
+          "test": {
+            "accuracy": 0.8066037735849056,
+            "precision": 0.7676470588235295,
+            "recall": 0.8557377049180328,
+            "f1": 0.8093023255813954,
+            "confusion_matrix": [
+              [
+                504,
+                158
+              ],
+              [
+                88,
+                522
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9152939428458223,
+            "pr_auc": 0.9106378219883732
+          },
+          "overfitting_gap_train_minus_test": 0.07144716422297959,
+          "overfitting_flag": false,
+          "suspicious_performance_flag": true,
+          "top_feature_importances": [
+            {
+              "feature": "numeric__contractor_productivity_factor",
+              "importance": 0.21882074612275804
+            },
+            {
+              "feature": "numeric__cost_tracking_gap_inr_cr",
+              "importance": 0.10088192702083726
+            },
+            {
+              "feature": "numeric__progress_efficiency",
+              "importance": 0.07400378283412941
+            },
+            {
+              "feature": "numeric__consecutive_underperforming_months",
+              "importance": 0.062292416978042324
+            },
+            {
+              "feature": "numeric__physical_progress_variance_pct",
+              "importance": 0.061962583077862725
+            },
+            {
+              "feature": "numeric__financial_progress_variance_pct",
+              "importance": 0.041286653277359156
+            },
+            {
+              "feature": "numeric__recent_progress_trend_3m",
+              "importance": 0.032361826970947555
+            },
+            {
+              "feature": "numeric__schedule_pressure",
+              "importance": 0.03209385023366035
+            },
+            {
+              "feature": "numeric__months_to_planned_completion",
+              "importance": 0.026450717637862605
+            },
+            {
+              "feature": "numeric__project_age_ratio",
+              "importance": 0.024624628180312608
+            }
+          ]
+        },
+        "xgboost": {
+          "selection_metric": "roc_auc",
+          "selection_epsilon": 0.005,
+          "selected_config": {
+            "n_estimators": 200,
+            "max_depth": 5,
+            "learning_rate": 0.05
+          },
+          "candidates_tried": [
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 3,
+                "learning_rate": 0.1
+              },
+              "train_metric": 0.999384664110308,
+              "validation_metric": 0.9325336470073313,
+              "train_minus_validation_gap": 0.0668510171029767
+            },
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 5,
+                "learning_rate": 0.05
+              },
+              "train_metric": 0.9996678043474767,
+              "validation_metric": 0.9411259437575227,
+              "train_minus_validation_gap": 0.05854186058995403
+            },
+            {
+              "config": {
+                "n_estimators": 400,
+                "max_depth": 3,
+                "learning_rate": 0.05
+              },
+              "train_metric": 0.9991918953786106,
+              "validation_metric": 0.9366943866943866,
+              "train_minus_validation_gap": 0.06249750868422399
+            }
+          ],
+          "artifact_path": "models\\xgboost\\delay_classification_xgboost.joblib",
+          "train": {
+            "accuracy": 0.9921151868357901,
+            "precision": 0.994137611848195,
+            "recall": 0.9916897506925207,
+            "f1": 0.9929121725731895,
+            "confusion_matrix": [
+              [
+                2566,
+                19
+              ],
+              [
+                27,
+                3222
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9996678043474767,
+            "pr_auc": 0.9997348222353819
+          },
+          "validation": {
+            "accuracy": 0.8444084278768234,
+            "precision": 0.9254658385093167,
+            "recall": 0.8054054054054054,
+            "f1": 0.861271676300578,
+            "confusion_matrix": [
+              [
+                446,
+                48
+              ],
+              [
+                144,
+                596
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9411259437575227,
+            "pr_auc": 0.9632338321921983
+          },
+          "test": {
+            "accuracy": 0.8026729559748428,
+            "precision": 0.7723823975720789,
+            "recall": 0.8344262295081967,
+            "f1": 0.8022064617809299,
+            "confusion_matrix": [
+              [
+                512,
+                150
+              ],
+              [
+                101,
+                509
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9014610470011392,
+            "pr_auc": 0.8937871271263024
+          },
+          "overfitting_gap_train_minus_test": 0.09820675734633755,
+          "overfitting_flag": false,
+          "suspicious_performance_flag": false,
+          "top_feature_importances": [
+            {
+              "feature": "numeric__contractor_productivity_factor",
+              "importance": 0.15046165883541107
+            },
+            {
+              "feature": "numeric__progress_efficiency",
+              "importance": 0.03564642369747162
+            },
+            {
+              "feature": "numeric__actual_physical_progress_pct",
+              "importance": 0.031994231045246124
+            },
+            {
+              "feature": "numeric__project_age_ratio",
+              "importance": 0.02521190047264099
+            },
+            {
+              "feature": "categorical__contractor_Malwa Builders Pvt Ltd",
+              "importance": 0.019923832267522812
+            },
+            {
+              "feature": "numeric__physical_progress_variance_pct",
+              "importance": 0.018462585285305977
+            },
+            {
+              "feature": "categorical__contractor_Sunrise Engineering & Constructions Ltd",
+              "importance": 0.017040854319930077
+            },
+            {
+              "feature": "categorical__contractor_Prakash Highways Ltd",
+              "importance": 0.01621745526790619
+            },
+            {
+              "feature": "numeric__actual_financial_progress_pct",
+              "importance": 0.016212735325098038
+            },
+            {
+              "feature": "numeric__cost_tracking_gap_inr_cr",
+              "importance": 0.01536539290100336
+            }
+          ]
+        }
+      }
+    },
+    "delay_regression": {
+      "task_type": "regression",
+      "label": "Task B: Delay Duration Regression",
+      "target": "final_delay_days",
+      "n_train_rows": 5834,
+      "n_validation_rows": 1234,
+      "n_test_rows": 1272,
+      "models": {
+        "random_forest": {
+          "selection_metric": "r2",
+          "selection_epsilon": 0.01,
+          "selected_config": {
+            "n_estimators": 200,
+            "max_depth": 8,
+            "min_samples_leaf": 5
+          },
+          "candidates_tried": [
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": null,
+                "min_samples_leaf": 1
+              },
+              "train_metric": 0.9952930645105899,
+              "validation_metric": 0.8586463516310511,
+              "train_minus_validation_gap": 0.13664671287953878
+            },
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 8,
+                "min_samples_leaf": 5
+              },
+              "train_metric": 0.9129691650009104,
+              "validation_metric": 0.8530468796021097,
+              "train_minus_validation_gap": 0.059922285398800734
+            },
+            {
+              "config": {
+                "n_estimators": 400,
+                "max_depth": null,
+                "min_samples_leaf": 5
+              },
+              "train_metric": 0.9820161934941763,
+              "validation_metric": 0.857946278360184,
+              "train_minus_validation_gap": 0.12406991513399235
+            }
+          ],
+          "artifact_path": "models\\random_forest\\delay_regression_random_forest.joblib",
+          "train": {
+            "mae": 22.872509208872323,
+            "rmse": 31.683761559341974,
+            "r2": 0.9129691650009104,
+            "median_ae": 17.105715249403872
+          },
+          "validation": {
+            "mae": 40.56816578326342,
+            "rmse": 59.971946900507774,
+            "r2": 0.8530468796021097,
+            "median_ae": 24.91466032174135
+          },
+          "test": {
+            "mae": 53.88464794559673,
+            "rmse": 88.57828383464043,
+            "r2": 0.5016831244497517,
+            "median_ae": 27.633428693403687
+          },
+          "overfitting_gap_train_minus_test": 0.4112860405511587,
+          "overfitting_flag": true,
+          "suspicious_performance_flag": true,
+          "top_feature_importances": [
+            {
+              "feature": "numeric__contractor_productivity_factor",
+              "importance": 0.49870464580811075
+            },
+            {
+              "feature": "numeric__original_contract_value_inr_cr",
+              "importance": 0.19897010776186977
+            },
+            {
+              "feature": "numeric__recent_progress_trend_3m",
+              "importance": 0.04682462542344952
+            },
+            {
+              "feature": "numeric__project_length_km",
+              "importance": 0.038684910627058575
+            },
+            {
+              "feature": "numeric__planned_duration_months",
+              "importance": 0.03634472848286244
+            },
+            {
+              "feature": "categorical__state_Karnataka",
+              "importance": 0.03186671631617966
+            },
+            {
+              "feature": "numeric__progress_efficiency",
+              "importance": 0.02046795629712988
+            },
+            {
+              "feature": "numeric__cost_tracking_gap_inr_cr",
+              "importance": 0.018081062156697372
+            },
+            {
+              "feature": "categorical__state_Himachal Pradesh",
+              "importance": 0.00920159976345468
+            },
+            {
+              "feature": "numeric__physical_progress_variance_pct",
+              "importance": 0.009067037449700265
+            }
+          ]
+        },
+        "xgboost": {
+          "selection_metric": "r2",
+          "selection_epsilon": 0.01,
+          "selected_config": {
+            "n_estimators": 400,
+            "max_depth": 3,
+            "learning_rate": 0.05
+          },
+          "candidates_tried": [
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 3,
+                "learning_rate": 0.1
+              },
+              "train_metric": 0.9514060616493225,
+              "validation_metric": 0.891839325428009,
+              "train_minus_validation_gap": 0.05956673622131348
+            },
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 5,
+                "learning_rate": 0.05
+              },
+              "train_metric": 0.9660775661468506,
+              "validation_metric": 0.8764398097991943,
+              "train_minus_validation_gap": 0.08963775634765625
+            },
+            {
+              "config": {
+                "n_estimators": 400,
+                "max_depth": 3,
+                "learning_rate": 0.05
+              },
+              "train_metric": 0.9512003660202026,
+              "validation_metric": 0.9022268652915955,
+              "train_minus_validation_gap": 0.04897350072860718
+            }
+          ],
+          "artifact_path": "models\\xgboost\\delay_regression_xgboost.joblib",
+          "train": {
+            "mae": 17.370264008406256,
+            "rmse": 23.725115137878973,
+            "r2": 0.9512003660202026,
+            "median_ae": 12.7919921875
+          },
+          "validation": {
+            "mae": 33.575289969495536,
+            "rmse": 48.917981674262776,
+            "r2": 0.9022268652915955,
+            "median_ae": 21.4807710647583
+          },
+          "test": {
+            "mae": 50.18186069990116,
+            "rmse": 82.18262748058648,
+            "r2": 0.5710456371307373,
+            "median_ae": 25.418254852294922
+          },
+          "overfitting_gap_train_minus_test": 0.38015472888946533,
+          "overfitting_flag": true,
+          "suspicious_performance_flag": true,
+          "top_feature_importances": [
+            {
+              "feature": "categorical__state_Karnataka",
+              "importance": 0.1581159234046936
+            },
+            {
+              "feature": "numeric__original_contract_value_inr_cr",
+              "importance": 0.10009758174419403
+            },
+            {
+              "feature": "numeric__contractor_productivity_factor",
+              "importance": 0.07483866810798645
+            },
+            {
+              "feature": "categorical__state_Himachal Pradesh",
+              "importance": 0.057018160820007324
+            },
+            {
+              "feature": "categorical__contractor_Rashtriya Builders Pvt Ltd",
+              "importance": 0.04395192861557007
+            },
+            {
+              "feature": "numeric__progress_efficiency",
+              "importance": 0.04052340239286423
+            },
+            {
+              "feature": "numeric__cost_tracking_gap_inr_cr",
+              "importance": 0.03918185085058212
+            },
+            {
+              "feature": "numeric__recent_progress_trend_3m",
+              "importance": 0.030789535492658615
+            },
+            {
+              "feature": "numeric__expenditure_gap_inr_cr",
+              "importance": 0.02342335134744644
+            },
+            {
+              "feature": "numeric__planned_duration_months",
+              "importance": 0.018032699823379517
+            }
+          ]
+        }
+      }
+    },
+    "cost_classification": {
+      "task_type": "classification",
+      "label": "Task C: Cost Overrun Classification",
+      "target": "cost_overrun",
+      "n_train_rows": 5834,
+      "n_validation_rows": 1234,
+      "n_test_rows": 1272,
+      "models": {
+        "random_forest": {
+          "selection_metric": "roc_auc",
+          "selection_epsilon": 0.005,
+          "selected_config": {
+            "n_estimators": 200,
+            "max_depth": null,
+            "min_samples_leaf": 1
+          },
+          "candidates_tried": [
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": null,
+                "min_samples_leaf": 1
+              },
+              "train_metric": 1.0,
+              "validation_metric": 0.9652226110165396,
+              "train_minus_validation_gap": 0.03477738898346039
+            },
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 8,
+                "min_samples_leaf": 5
+              },
+              "train_metric": 0.9885748335545189,
+              "validation_metric": 0.9564445285080806,
+              "train_minus_validation_gap": 0.03213030504643832
+            },
+            {
+              "config": {
+                "n_estimators": 400,
+                "max_depth": null,
+                "min_samples_leaf": 5
+              },
+              "train_metric": 0.999904685198452,
+              "validation_metric": 0.9642808355925434,
+              "train_minus_validation_gap": 0.035623849605908586
+            }
+          ],
+          "artifact_path": "models\\random_forest\\cost_classification_random_forest.joblib",
+          "train": {
+            "accuracy": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "confusion_matrix": [
+              [
+                3565,
+                0
+              ],
+              [
+                0,
+                2269
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 1.0,
+            "pr_auc": 1.0
+          },
+          "validation": {
+            "accuracy": 0.859805510534846,
+            "precision": 0.9553752535496958,
+            "recall": 0.7572347266881029,
+            "f1": 0.8448430493273542,
+            "confusion_matrix": [
+              [
+                590,
+                22
+              ],
+              [
+                151,
+                471
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9652226110165396,
+            "pr_auc": 0.9575269249949652
+          },
+          "test": {
+            "accuracy": 0.8419811320754716,
+            "precision": 0.7637969094922737,
+            "recall": 0.7863636363636364,
+            "f1": 0.77491601343785,
+            "confusion_matrix": [
+              [
+                725,
+                107
+              ],
+              [
+                94,
+                346
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9341851507867132,
+            "pr_auc": 0.883418881620333
+          },
+          "overfitting_gap_train_minus_test": 0.06581484921328684,
+          "overfitting_flag": false,
+          "suspicious_performance_flag": true,
+          "top_feature_importances": [
+            {
+              "feature": "numeric__contractor_productivity_factor",
+              "importance": 0.12407782711052891
+            },
+            {
+              "feature": "numeric__cost_tracking_gap_inr_cr",
+              "importance": 0.11562442384311696
+            },
+            {
+              "feature": "numeric__schedule_pressure",
+              "importance": 0.03491348454111114
+            },
+            {
+              "feature": "numeric__progress_efficiency",
+              "importance": 0.03488457747070856
+            },
+            {
+              "feature": "numeric__cost_growth_rate",
+              "importance": 0.0333634142115249
+            },
+            {
+              "feature": "numeric__consecutive_underperforming_months",
+              "importance": 0.03168016732919299
+            },
+            {
+              "feature": "numeric__project_length_km",
+              "importance": 0.0302229907700906
+            },
+            {
+              "feature": "numeric__physical_progress_variance_pct",
+              "importance": 0.029538758348226956
+            },
+            {
+              "feature": "numeric__original_contract_value_inr_cr",
+              "importance": 0.029525076206274762
+            },
+            {
+              "feature": "numeric__planned_duration_months",
+              "importance": 0.02071918028800973
+            }
+          ]
+        },
+        "xgboost": {
+          "selection_metric": "roc_auc",
+          "selection_epsilon": 0.005,
+          "selected_config": {
+            "n_estimators": 400,
+            "max_depth": 3,
+            "learning_rate": 0.05
+          },
+          "candidates_tried": [
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 3,
+                "learning_rate": 0.1
+              },
+              "train_metric": 0.9992284569695704,
+              "validation_metric": 0.9761338082928778,
+              "train_minus_validation_gap": 0.023094648676692642
+            },
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 5,
+                "learning_rate": 0.05
+              },
+              "train_metric": 0.9997966370317165,
+              "validation_metric": 0.9747152344324655,
+              "train_minus_validation_gap": 0.025081402599250957
+            },
+            {
+              "config": {
+                "n_estimators": 400,
+                "max_depth": 3,
+                "learning_rate": 0.05
+              },
+              "train_metric": 0.9990170583824793,
+              "validation_metric": 0.9766224281781309,
+              "train_minus_validation_gap": 0.022394630204348398
+            }
+          ],
+          "artifact_path": "models\\xgboost\\cost_classification_xgboost.joblib",
+          "train": {
+            "accuracy": 0.9869729173808708,
+            "precision": 0.9845338046840477,
+            "recall": 0.9819303657999119,
+            "f1": 0.9832303618711385,
+            "confusion_matrix": [
+              [
+                3530,
+                35
+              ],
+              [
+                41,
+                2228
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9990170583824793,
+            "pr_auc": 0.9986002827900535
+          },
+          "validation": {
+            "accuracy": 0.8630470016207455,
+            "precision": 0.9539078156312625,
+            "recall": 0.7652733118971061,
+            "f1": 0.8492417484388939,
+            "confusion_matrix": [
+              [
+                589,
+                23
+              ],
+              [
+                146,
+                476
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.9766224281781309,
+            "pr_auc": 0.9769913361501508
+          },
+          "test": {
+            "accuracy": 0.7421383647798742,
+            "precision": 0.6320754716981132,
+            "recall": 0.6090909090909091,
+            "f1": 0.6203703703703703,
+            "confusion_matrix": [
+              [
+                676,
+                156
+              ],
+              [
+                172,
+                268
+              ]
+            ],
+            "confusion_matrix_labels": [
+              "actual_0",
+              "actual_1"
+            ],
+            "roc_auc": 0.8695367132867133,
+            "pr_auc": 0.8003861819467385
+          },
+          "overfitting_gap_train_minus_test": 0.129480345095766,
+          "overfitting_flag": false,
+          "suspicious_performance_flag": true,
+          "top_feature_importances": [
+            {
+              "feature": "numeric__contractor_productivity_factor",
+              "importance": 0.1353629231452942
+            },
+            {
+              "feature": "numeric__cost_tracking_gap_inr_cr",
+              "importance": 0.06777478754520416
+            },
+            {
+              "feature": "numeric__actual_expenditure_inr_cr",
+              "importance": 0.0456426739692688
+            },
+            {
+              "feature": "numeric__labour_cost_inr_cr",
+              "importance": 0.03539450839161873
+            },
+            {
+              "feature": "categorical__state_Karnataka",
+              "importance": 0.02498011291027069
+            },
+            {
+              "feature": "numeric__progress_efficiency",
+              "importance": 0.02269134856760502
+            },
+            {
+              "feature": "numeric__schedule_pressure",
+              "importance": 0.022645272314548492
+            },
+            {
+              "feature": "categorical__contractor_Prakash Constructions Pvt Ltd",
+              "importance": 0.02070259302854538
+            },
+            {
+              "feature": "categorical__contractor_Horizon Engineering & Constructions Ltd",
+              "importance": 0.020489901304244995
+            },
+            {
+              "feature": "categorical__contractor_Trimurti Roadways Pvt Ltd",
+              "importance": 0.020111357793211937
+            }
+          ]
+        }
+      }
+    },
+    "cost_regression": {
+      "task_type": "regression",
+      "label": "Task D: Cost Overrun Regression",
+      "target": "final_cost_overrun_pct",
+      "n_train_rows": 5834,
+      "n_validation_rows": 1234,
+      "n_test_rows": 1272,
+      "models": {
+        "random_forest": {
+          "selection_metric": "r2",
+          "selection_epsilon": 0.01,
+          "selected_config": {
+            "n_estimators": 400,
+            "max_depth": null,
+            "min_samples_leaf": 5
+          },
+          "candidates_tried": [
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": null,
+                "min_samples_leaf": 1
+              },
+              "train_metric": 0.996038526572068,
+              "validation_metric": 0.8384788615774951,
+              "train_minus_validation_gap": 0.15755966499457297
+            },
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 8,
+                "min_samples_leaf": 5
+              },
+              "train_metric": 0.8547828239851,
+              "validation_metric": 0.8233837169569567,
+              "train_minus_validation_gap": 0.0313991070281433
+            },
+            {
+              "config": {
+                "n_estimators": 400,
+                "max_depth": null,
+                "min_samples_leaf": 5
+              },
+              "train_metric": 0.9827432269859869,
+              "validation_metric": 0.8380470718325157,
+              "train_minus_validation_gap": 0.14469615515347123
+            }
+          ],
+          "artifact_path": "models\\random_forest\\cost_regression_random_forest.joblib",
+          "train": {
+            "mae": 0.732440263542643,
+            "rmse": 1.5163528049136747,
+            "r2": 0.9827432269859869,
+            "median_ae": 0.2511545427241133
+          },
+          "validation": {
+            "mae": 3.82101261282495,
+            "rmse": 4.98451332448605,
+            "r2": 0.8380470718325157,
+            "median_ae": 3.0205565504846046
+          },
+          "test": {
+            "mae": 6.087933825650442,
+            "rmse": 7.8735291120466195,
+            "r2": 0.6804380457672532,
+            "median_ae": 4.914106088374552
+          },
+          "overfitting_gap_train_minus_test": 0.30230518121873373,
+          "overfitting_flag": true,
+          "suspicious_performance_flag": false,
+          "top_feature_importances": [
+            {
+              "feature": "numeric__cost_tracking_gap_inr_cr",
+              "importance": 0.3024641411024716
+            },
+            {
+              "feature": "numeric__contractor_productivity_factor",
+              "importance": 0.28157923344823566
+            },
+            {
+              "feature": "categorical__contractor_Apex Engineering & Constructions Ltd",
+              "importance": 0.03617655406417009
+            },
+            {
+              "feature": "numeric__original_contract_value_inr_cr",
+              "importance": 0.030464354047419418
+            },
+            {
+              "feature": "numeric__project_length_km",
+              "importance": 0.0250341703480301
+            },
+            {
+              "feature": "categorical__contractor_Suvidha Infraprojects Pvt Ltd",
+              "importance": 0.022861448662161873
+            },
+            {
+              "feature": "categorical__contractor_Prakash Infraprojects Pvt Ltd",
+              "importance": 0.022579712032874535
+            },
+            {
+              "feature": "categorical__contractor_Rashtriya Roadways Pvt Ltd",
+              "importance": 0.02087726749627564
+            },
+            {
+              "feature": "categorical__contractor_Uttam Engineering & Constructions Ltd",
+              "importance": 0.01869871724577389
+            },
+            {
+              "feature": "categorical__contractor_Aravalli Roadways Pvt Ltd",
+              "importance": 0.01821044541612803
+            }
+          ]
+        },
+        "xgboost": {
+          "selection_metric": "r2",
+          "selection_epsilon": 0.01,
+          "selected_config": {
+            "n_estimators": 200,
+            "max_depth": 3,
+            "learning_rate": 0.1
+          },
+          "candidates_tried": [
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 3,
+                "learning_rate": 0.1
+              },
+              "train_metric": 0.9332128507074267,
+              "validation_metric": 0.8774873795117798,
+              "train_minus_validation_gap": 0.05572547119564686
+            },
+            {
+              "config": {
+                "n_estimators": 200,
+                "max_depth": 5,
+                "learning_rate": 0.05
+              },
+              "train_metric": 0.954608430983014,
+              "validation_metric": 0.863350500383545,
+              "train_minus_validation_gap": 0.09125793059946896
+            },
+            {
+              "config": {
+                "n_estimators": 400,
+                "max_depth": 3,
+                "learning_rate": 0.05
+              },
+              "train_metric": 0.9307354244169896,
+              "validation_metric": 0.8709797582715415,
+              "train_minus_validation_gap": 0.05975566614544814
+            }
+          ],
+          "artifact_path": "models\\xgboost\\cost_regression_xgboost.joblib",
+          "train": {
+            "mae": 2.251672637207835,
+            "rmse": 2.983093865048294,
+            "r2": 0.9332128507074267,
+            "median_ae": 1.7330069732666011
+          },
+          "validation": {
+            "mae": 3.361976728582184,
+            "rmse": 4.335296185525629,
+            "r2": 0.8774873795117798,
+            "median_ae": 2.655845024585724
+          },
+          "test": {
+            "mae": 5.120833081221735,
+            "rmse": 6.980185596055841,
+            "r2": 0.7488401970913983,
+            "median_ae": 3.9317850518226627
+          },
+          "overfitting_gap_train_minus_test": 0.1843726536160284,
+          "overfitting_flag": true,
+          "suspicious_performance_flag": true,
+          "top_feature_importances": [
+            {
+              "feature": "numeric__cost_tracking_gap_inr_cr",
+              "importance": 0.08916017413139343
+            },
+            {
+              "feature": "numeric__contractor_productivity_factor",
+              "importance": 0.08270765095949173
+            },
+            {
+              "feature": "categorical__contractor_Apex Engineering & Constructions Ltd",
+              "importance": 0.048559583723545074
+            },
+            {
+              "feature": "numeric__actual_expenditure_inr_cr",
+              "importance": 0.04469874128699303
+            },
+            {
+              "feature": "numeric__schedule_pressure",
+              "importance": 0.03933727741241455
+            },
+            {
+              "feature": "categorical__state_Gujarat",
+              "importance": 0.036231737583875656
+            },
+            {
+              "feature": "categorical__contractor_Prakash Infraprojects Pvt Ltd",
+              "importance": 0.03331449255347252
+            },
+            {
+              "feature": "categorical__contractor_Suvidha Infraprojects Pvt Ltd",
+              "importance": 0.031802549958229065
+            },
+            {
+              "feature": "categorical__contractor_Aravalli Roadways Pvt Ltd",
+              "importance": 0.03000965714454651
+            },
+            {
+              "feature": "categorical__contractor_Rashtriya Roadways Pvt Ltd",
+              "importance": 0.027125664055347443
+            }
+          ]
+        }
+      }
+    }
+  },
+  "delay_regression_cohort_diagnostic": {
+    "train": {
+      "n_projects": 280,
+      "project_type_distribution": {
+        "Road Widening (2 to 4 lane)": 0.275,
+        "Road Widening (4 to 6 lane)": 0.2393,
+        "Greenfield Highway": 0.1643,
+        "Bypass/Ring Road": 0.1607,
+        "Expressway": 0.0821,
+        "Bridge/ROB/Flyover": 0.0786
+      },
+      "state_distribution_top5": {
+        "Madhya Pradesh": 0.0821,
+        "Assam": 0.075,
+        "Bihar": 0.0714,
+        "Chhattisgarh": 0.0571,
+        "Rajasthan": 0.0536
+      },
+      "project_length_km_mean": 32.71571428571429,
+      "project_length_km_std": 21.345182836235907,
+      "original_contract_value_inr_cr_mean": 728.410142857143,
+      "original_contract_value_inr_cr_std": 752.4067177033581,
+      "final_delay_days_mean": 65.38928571428572,
+      "final_delay_days_std": 86.18269682751217,
+      "final_delay_days_median": 60.5
+    },
+    "validation": {
+      "n_projects": 60,
+      "project_type_distribution": {
+        "Road Widening (2 to 4 lane)": 0.2833,
+        "Greenfield Highway": 0.1667,
+        "Bridge/ROB/Flyover": 0.1667,
+        "Bypass/Ring Road": 0.1667,
+        "Road Widening (4 to 6 lane)": 0.15,
+        "Expressway": 0.0667
+      },
+      "state_distribution_top5": {
+        "Uttarakhand": 0.1,
+        "Haryana": 0.0833,
+        "Andhra Pradesh": 0.0833,
+        "Telangana": 0.0667,
+        "Jharkhand": 0.0667
+      },
+      "project_length_km_mean": 30.16166666666667,
+      "project_length_km_std": 21.879882112180994,
+      "original_contract_value_inr_cr_mean": 684.2999999999998,
+      "original_contract_value_inr_cr_std": 707.8617108384847,
+      "final_delay_days_mean": 69.01666666666667,
+      "final_delay_days_std": 105.62220677950141,
+      "final_delay_days_median": 61.0
+    },
+    "test": {
+      "n_projects": 60,
+      "project_type_distribution": {
+        "Road Widening (2 to 4 lane)": 0.2333,
+        "Road Widening (4 to 6 lane)": 0.1833,
+        "Bypass/Ring Road": 0.1667,
+        "Greenfield Highway": 0.15,
+        "Bridge/ROB/Flyover": 0.15,
+        "Expressway": 0.1167
+      },
+      "state_distribution_top5": {
+        "Uttar Pradesh": 0.1333,
+        "Jharkhand": 0.1,
+        "Madhya Pradesh": 0.0833,
+        "West Bengal": 0.0833,
+        "Maharashtra": 0.0833
+      },
+      "project_length_km_mean": 31.615666666666673,
+      "project_length_km_std": 23.24667341732471,
+      "original_contract_value_inr_cr_mean": 750.1928333333334,
+      "original_contract_value_inr_cr_std": 673.1546987464163,
+      "final_delay_days_mean": 59.31666666666667,
+      "final_delay_days_std": 98.41136279761406,
+      "final_delay_days_median": 45.0
+    }
+  }
+}

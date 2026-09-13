@@ -1,0 +1,653 @@
+{
+  "delay_classification": {
+    "task_type": "classification",
+    "label": "Task A: Significant Delay Classification",
+    "model_family_explained": "random_forest",
+    "global_summary_plot": "docs\\artifacts\\delay_classification_shap_summary.png",
+    "global_feature_ranking": [
+      {
+        "feature": "numeric__contractor_productivity_factor",
+        "mean_abs_shap": 0.10186541216001267
+      },
+      {
+        "feature": "numeric__cost_tracking_gap_inr_cr",
+        "mean_abs_shap": 0.0548385625485456
+      },
+      {
+        "feature": "numeric__progress_efficiency",
+        "mean_abs_shap": 0.04675401721763254
+      },
+      {
+        "feature": "numeric__consecutive_underperforming_months",
+        "mean_abs_shap": 0.0323616288927702
+      },
+      {
+        "feature": "numeric__physical_progress_variance_pct",
+        "mean_abs_shap": 0.03228305368956633
+      },
+      {
+        "feature": "numeric__actual_physical_progress_pct",
+        "mean_abs_shap": 0.019236116968035878
+      },
+      {
+        "feature": "numeric__financial_progress_variance_pct",
+        "mean_abs_shap": 0.018667418805383276
+      },
+      {
+        "feature": "numeric__expenditure_gap_inr_cr",
+        "mean_abs_shap": 0.01674362319650955
+      },
+      {
+        "feature": "numeric__recent_progress_trend_3m",
+        "mean_abs_shap": 0.01636623977948435
+      },
+      {
+        "feature": "numeric__schedule_pressure",
+        "mean_abs_shap": 0.015852914950714343
+      },
+      {
+        "feature": "numeric__months_to_planned_completion",
+        "mean_abs_shap": 0.011846230909555682
+      },
+      {
+        "feature": "numeric__project_age_ratio",
+        "mean_abs_shap": 0.011482129566557885
+      },
+      {
+        "feature": "numeric__actual_financial_progress_pct",
+        "mean_abs_shap": 0.011063249826945877
+      },
+      {
+        "feature": "numeric__project_length_km",
+        "mean_abs_shap": 0.010830698585851941
+      },
+      {
+        "feature": "numeric__planned_physical_progress_pct",
+        "mean_abs_shap": 0.009752759816444306
+      }
+    ],
+    "local_examples": {
+      "high": {
+        "base_value": 0.5570474802879671,
+        "final_output": 0.9894418741110118,
+        "pushed_prediction_up": [
+          {
+            "feature": "numeric__contractor_productivity_factor",
+            "shap_value": 0.05741854825605521
+          },
+          {
+            "feature": "numeric__progress_efficiency",
+            "shap_value": 0.05626136267163343
+          },
+          {
+            "feature": "numeric__physical_progress_variance_pct",
+            "shap_value": 0.05301965417242391
+          },
+          {
+            "feature": "numeric__project_age_ratio",
+            "shap_value": 0.03523719867959674
+          },
+          {
+            "feature": "numeric__consecutive_underperforming_months",
+            "shap_value": 0.03284857436734621
+          },
+          {
+            "feature": "numeric__months_to_planned_completion",
+            "shap_value": 0.03205599511370383
+          },
+          {
+            "feature": "numeric__schedule_pressure",
+            "shap_value": 0.03124444718816425
+          },
+          {
+            "feature": "numeric__financial_progress_variance_pct",
+            "shap_value": 0.02985767714766511
+          }
+        ],
+        "pushed_prediction_down": [],
+        "test_row_index": 205,
+        "project_id": "HRI-0075",
+        "reporting_month": "2025-12",
+        "model_predicted_score": 0.9894418741110117,
+        "actual_target_value": 1
+      },
+      "low": {
+        "base_value": 0.5570474802879671,
+        "final_output": 0.056712338347605584,
+        "pushed_prediction_up": [],
+        "pushed_prediction_down": [
+          {
+            "feature": "numeric__contractor_productivity_factor",
+            "shap_value": -0.11758395232331906
+          },
+          {
+            "feature": "numeric__cost_tracking_gap_inr_cr",
+            "shap_value": -0.08154549453552136
+          },
+          {
+            "feature": "numeric__progress_efficiency",
+            "shap_value": -0.03826068306644489
+          },
+          {
+            "feature": "numeric__financial_progress_variance_pct",
+            "shap_value": -0.036134208413948
+          },
+          {
+            "feature": "numeric__physical_progress_variance_pct",
+            "shap_value": -0.03402505971075478
+          },
+          {
+            "feature": "numeric__consecutive_underperforming_months",
+            "shap_value": -0.03233173910518153
+          },
+          {
+            "feature": "numeric__actual_physical_progress_pct",
+            "shap_value": -0.021967835933282838
+          },
+          {
+            "feature": "numeric__expenditure_gap_inr_cr",
+            "shap_value": -0.019891973725723176
+          }
+        ],
+        "test_row_index": 1268,
+        "project_id": "HRI-0393",
+        "reporting_month": "2025-04",
+        "model_predicted_score": 0.05671233834760553,
+        "actual_target_value": 0
+      }
+    },
+    "local_example_plots": {
+      "high": "docs\\artifacts\\delay_classification_shap_waterfall_high.png",
+      "low": "docs\\artifacts\\delay_classification_shap_waterfall_low.png"
+    }
+  },
+  "delay_regression": {
+    "task_type": "regression",
+    "label": "Task B: Delay Duration Regression",
+    "model_family_explained": "xgboost",
+    "global_summary_plot": "docs\\artifacts\\delay_regression_shap_summary.png",
+    "global_feature_ranking": [
+      {
+        "feature": "numeric__contractor_productivity_factor",
+        "mean_abs_shap": 33.51462173461914
+      },
+      {
+        "feature": "numeric__cost_tracking_gap_inr_cr",
+        "mean_abs_shap": 11.840263366699219
+      },
+      {
+        "feature": "numeric__recent_progress_trend_3m",
+        "mean_abs_shap": 10.111916542053223
+      },
+      {
+        "feature": "numeric__progress_efficiency",
+        "mean_abs_shap": 10.081439018249512
+      },
+      {
+        "feature": "numeric__actual_physical_progress_pct",
+        "mean_abs_shap": 8.084240913391113
+      },
+      {
+        "feature": "numeric__project_length_km",
+        "mean_abs_shap": 5.297278881072998
+      },
+      {
+        "feature": "numeric__original_contract_value_inr_cr",
+        "mean_abs_shap": 5.183753490447998
+      },
+      {
+        "feature": "numeric__physical_progress_variance_pct",
+        "mean_abs_shap": 4.197619915008545
+      },
+      {
+        "feature": "categorical__contractor_Rashtriya Builders Pvt Ltd",
+        "mean_abs_shap": 4.129834175109863
+      },
+      {
+        "feature": "numeric__schedule_pressure",
+        "mean_abs_shap": 3.6852195262908936
+      },
+      {
+        "feature": "numeric__planned_physical_progress_pct",
+        "mean_abs_shap": 3.378582239151001
+      },
+      {
+        "feature": "numeric__planned_duration_months",
+        "mean_abs_shap": 3.239027261734009
+      },
+      {
+        "feature": "categorical__contractor_Continental Constructions Pvt Ltd",
+        "mean_abs_shap": 2.9640378952026367
+      },
+      {
+        "feature": "numeric__variation_cost_inr_cr",
+        "mean_abs_shap": 2.6422977447509766
+      },
+      {
+        "feature": "categorical__state_Karnataka",
+        "mean_abs_shap": 2.492047071456909
+      }
+    ],
+    "local_examples": {
+      "high": {
+        "base_value": 84.76079559326172,
+        "final_output": 292.43695068359375,
+        "pushed_prediction_up": [
+          {
+            "feature": "numeric__contractor_productivity_factor",
+            "shap_value": 69.11554718017578
+          },
+          {
+            "feature": "numeric__progress_efficiency",
+            "shap_value": 48.48091125488281
+          },
+          {
+            "feature": "categorical__contractor_Continental Constructions Pvt Ltd",
+            "shap_value": 46.1309928894043
+          },
+          {
+            "feature": "numeric__recent_progress_trend_3m",
+            "shap_value": 25.937572479248047
+          },
+          {
+            "feature": "numeric__planned_duration_months",
+            "shap_value": 14.714788436889648
+          },
+          {
+            "feature": "numeric__cost_tracking_gap_inr_cr",
+            "shap_value": 14.36244010925293
+          },
+          {
+            "feature": "numeric__physical_progress_variance_pct",
+            "shap_value": 11.997956275939941
+          },
+          {
+            "feature": "numeric__schedule_pressure",
+            "shap_value": 10.889863967895508
+          }
+        ],
+        "pushed_prediction_down": [],
+        "test_row_index": 427,
+        "project_id": "HRI-0132",
+        "reporting_month": "2026-07",
+        "model_predicted_score": 292.4367980957031,
+        "actual_target_value": 519.0
+      },
+      "low": {
+        "base_value": 84.76079559326172,
+        "final_output": -74.38037872314453,
+        "pushed_prediction_up": [],
+        "pushed_prediction_down": [
+          {
+            "feature": "numeric__contractor_productivity_factor",
+            "shap_value": -53.66996765136719
+          },
+          {
+            "feature": "numeric__cost_tracking_gap_inr_cr",
+            "shap_value": -22.410619735717773
+          },
+          {
+            "feature": "numeric__financial_progress_variance_pct",
+            "shap_value": -12.730718612670898
+          },
+          {
+            "feature": "numeric__physical_progress_variance_pct",
+            "shap_value": -12.35525894165039
+          },
+          {
+            "feature": "numeric__recent_progress_trend_3m",
+            "shap_value": -8.682295799255371
+          },
+          {
+            "feature": "numeric__progress_efficiency",
+            "shap_value": -8.609603881835938
+          },
+          {
+            "feature": "numeric__actual_physical_progress_pct",
+            "shap_value": -8.179465293884277
+          },
+          {
+            "feature": "numeric__material_delay_days",
+            "shap_value": -5.589163303375244
+          }
+        ],
+        "test_row_index": 1266,
+        "project_id": "HRI-0393",
+        "reporting_month": "2025-02",
+        "model_predicted_score": -74.38040161132812,
+        "actual_target_value": -92.0
+      }
+    },
+    "local_example_plots": {
+      "high": "docs\\artifacts\\delay_regression_shap_waterfall_high.png",
+      "low": "docs\\artifacts\\delay_regression_shap_waterfall_low.png"
+    }
+  },
+  "cost_classification": {
+    "task_type": "classification",
+    "label": "Task C: Cost Overrun Classification",
+    "model_family_explained": "xgboost",
+    "global_summary_plot": "docs\\artifacts\\cost_classification_shap_summary.png",
+    "global_feature_ranking": [
+      {
+        "feature": "numeric__cost_tracking_gap_inr_cr",
+        "mean_abs_shap": 1.3450233936309814
+      },
+      {
+        "feature": "numeric__original_contract_value_inr_cr",
+        "mean_abs_shap": 0.8261306285858154
+      },
+      {
+        "feature": "numeric__contractor_productivity_factor",
+        "mean_abs_shap": 0.7566035389900208
+      },
+      {
+        "feature": "numeric__cost_growth_rate",
+        "mean_abs_shap": 0.43581750988960266
+      },
+      {
+        "feature": "numeric__planned_duration_months",
+        "mean_abs_shap": 0.3792538642883301
+      },
+      {
+        "feature": "numeric__progress_efficiency",
+        "mean_abs_shap": 0.34029462933540344
+      },
+      {
+        "feature": "numeric__project_length_km",
+        "mean_abs_shap": 0.2556735873222351
+      },
+      {
+        "feature": "numeric__approval_delay_days",
+        "mean_abs_shap": 0.17653390765190125
+      },
+      {
+        "feature": "categorical__state_Madhya Pradesh",
+        "mean_abs_shap": 0.14403757452964783
+      },
+      {
+        "feature": "categorical__project_type_Expressway",
+        "mean_abs_shap": 0.10447099059820175
+      },
+      {
+        "feature": "categorical__contractor_Trimurti Roadways Pvt Ltd",
+        "mean_abs_shap": 0.10288252681493759
+      },
+      {
+        "feature": "categorical__project_type_Road Widening (4 to 6 lane)",
+        "mean_abs_shap": 0.09546802937984467
+      },
+      {
+        "feature": "categorical__contractor_Prakash Infraprojects Pvt Ltd",
+        "mean_abs_shap": 0.08539219945669174
+      },
+      {
+        "feature": "categorical__state_Assam",
+        "mean_abs_shap": 0.0848216861486435
+      },
+      {
+        "feature": "categorical__contractor_Vindhya Engineering & Constructions Ltd",
+        "mean_abs_shap": 0.0831758975982666
+      }
+    ],
+    "local_examples": {
+      "high": {
+        "base_value": -0.4602099061012268,
+        "final_output": 4.973405361175537,
+        "pushed_prediction_up": [
+          {
+            "feature": "numeric__cost_tracking_gap_inr_cr",
+            "shap_value": 1.699137568473816
+          },
+          {
+            "feature": "categorical__contractor_Continental Constructions Pvt Ltd",
+            "shap_value": 1.0201117992401123
+          },
+          {
+            "feature": "numeric__progress_efficiency",
+            "shap_value": 1.0096251964569092
+          },
+          {
+            "feature": "numeric__contractor_productivity_factor",
+            "shap_value": 0.9071500301361084
+          },
+          {
+            "feature": "numeric__original_contract_value_inr_cr",
+            "shap_value": 0.6926177740097046
+          },
+          {
+            "feature": "numeric__schedule_pressure",
+            "shap_value": 0.18197771906852722
+          },
+          {
+            "feature": "categorical__project_type_Road Widening (4 to 6 lane)",
+            "shap_value": 0.17911028861999512
+          },
+          {
+            "feature": "numeric__cost_growth_rate",
+            "shap_value": 0.14850221574306488
+          }
+        ],
+        "pushed_prediction_down": [],
+        "test_row_index": 204,
+        "project_id": "HRI-0075",
+        "reporting_month": "2025-11",
+        "model_predicted_score": 0.9931280612945557,
+        "actual_target_value": 1
+      },
+      "low": {
+        "base_value": -0.4602099061012268,
+        "final_output": -8.231087684631348,
+        "pushed_prediction_up": [
+          {
+            "feature": "numeric__planned_duration_months",
+            "shap_value": 0.5854921936988831
+          }
+        ],
+        "pushed_prediction_down": [
+          {
+            "feature": "numeric__cost_tracking_gap_inr_cr",
+            "shap_value": -2.4095258712768555
+          },
+          {
+            "feature": "numeric__original_contract_value_inr_cr",
+            "shap_value": -2.3172378540039062
+          },
+          {
+            "feature": "numeric__contractor_productivity_factor",
+            "shap_value": -0.9661324620246887
+          },
+          {
+            "feature": "numeric__cost_growth_rate",
+            "shap_value": -0.7569857239723206
+          },
+          {
+            "feature": "categorical__project_type_Expressway",
+            "shap_value": -0.47753122448921204
+          },
+          {
+            "feature": "numeric__progress_efficiency",
+            "shap_value": -0.38664984703063965
+          },
+          {
+            "feature": "categorical__state_Karnataka",
+            "shap_value": -0.2775677740573883
+          }
+        ],
+        "test_row_index": 307,
+        "project_id": "HRI-0101",
+        "reporting_month": "2026-06",
+        "model_predicted_score": 0.00026617597904987633,
+        "actual_target_value": 0
+      }
+    },
+    "local_example_plots": {
+      "high": "docs\\artifacts\\cost_classification_shap_waterfall_high.png",
+      "low": "docs\\artifacts\\cost_classification_shap_waterfall_low.png"
+    }
+  },
+  "cost_regression": {
+    "task_type": "regression",
+    "label": "Task D: Cost Overrun Regression",
+    "model_family_explained": "xgboost",
+    "global_summary_plot": "docs\\artifacts\\cost_regression_shap_summary.png",
+    "global_feature_ranking": [
+      {
+        "feature": "numeric__cost_tracking_gap_inr_cr",
+        "mean_abs_shap": 3.1450960636138916
+      },
+      {
+        "feature": "numeric__contractor_productivity_factor",
+        "mean_abs_shap": 2.883326530456543
+      },
+      {
+        "feature": "numeric__cost_growth_rate",
+        "mean_abs_shap": 1.1679617166519165
+      },
+      {
+        "feature": "numeric__progress_efficiency",
+        "mean_abs_shap": 0.8878287076950073
+      },
+      {
+        "feature": "numeric__original_contract_value_inr_cr",
+        "mean_abs_shap": 0.860072672367096
+      },
+      {
+        "feature": "categorical__contractor_Apex Engineering & Constructions Ltd",
+        "mean_abs_shap": 0.49809277057647705
+      },
+      {
+        "feature": "categorical__contractor_Continental Constructions Pvt Ltd",
+        "mean_abs_shap": 0.48127278685569763
+      },
+      {
+        "feature": "numeric__schedule_pressure",
+        "mean_abs_shap": 0.468104749917984
+      },
+      {
+        "feature": "categorical__contractor_Uttam Engineering & Constructions Ltd",
+        "mean_abs_shap": 0.38528013229370117
+      },
+      {
+        "feature": "numeric__project_length_km",
+        "mean_abs_shap": 0.35979363322257996
+      },
+      {
+        "feature": "categorical__contractor_Suvidha Infraprojects Pvt Ltd",
+        "mean_abs_shap": 0.3515826463699341
+      },
+      {
+        "feature": "numeric__environment_clearance_delay_days",
+        "mean_abs_shap": 0.3258996605873108
+      },
+      {
+        "feature": "categorical__contractor_Rashtriya Builders Pvt Ltd",
+        "mean_abs_shap": 0.3254975974559784
+      },
+      {
+        "feature": "numeric__actual_expenditure_inr_cr",
+        "mean_abs_shap": 0.2968849539756775
+      },
+      {
+        "feature": "numeric__design_change_delay_days",
+        "mean_abs_shap": 0.27793991565704346
+      }
+    ],
+    "local_examples": {
+      "high": {
+        "base_value": 8.251285552978516,
+        "final_output": 37.27100372314453,
+        "pushed_prediction_up": [
+          {
+            "feature": "categorical__contractor_Apex Engineering & Constructions Ltd",
+            "shap_value": 12.424201965332031
+          },
+          {
+            "feature": "numeric__contractor_productivity_factor",
+            "shap_value": 6.863267421722412
+          },
+          {
+            "feature": "numeric__cost_tracking_gap_inr_cr",
+            "shap_value": 2.986254930496216
+          },
+          {
+            "feature": "numeric__progress_efficiency",
+            "shap_value": 2.919360637664795
+          },
+          {
+            "feature": "numeric__schedule_pressure",
+            "shap_value": 1.642214059829712
+          },
+          {
+            "feature": "numeric__original_contract_value_inr_cr",
+            "shap_value": 1.3072328567504883
+          },
+          {
+            "feature": "numeric__project_length_km",
+            "shap_value": 0.7986217141151428
+          }
+        ],
+        "pushed_prediction_down": [
+          {
+            "feature": "numeric__cost_growth_rate",
+            "shap_value": -0.6242839694023132
+          }
+        ],
+        "test_row_index": 1010,
+        "project_id": "HRI-0295",
+        "reporting_month": "2024-12",
+        "model_predicted_score": 37.27098083496094,
+        "actual_target_value": 31.6
+      },
+      "low": {
+        "base_value": 8.251285552978516,
+        "final_output": -12.408184051513672,
+        "pushed_prediction_up": [
+          {
+            "feature": "numeric__original_contract_value_inr_cr",
+            "shap_value": 0.3374536633491516
+          }
+        ],
+        "pushed_prediction_down": [
+          {
+            "feature": "categorical__contractor_Uttam Engineering & Constructions Ltd",
+            "shap_value": -6.310995101928711
+          },
+          {
+            "feature": "numeric__cost_tracking_gap_inr_cr",
+            "shap_value": -5.97908353805542
+          },
+          {
+            "feature": "numeric__contractor_productivity_factor",
+            "shap_value": -4.160173416137695
+          },
+          {
+            "feature": "numeric__cost_growth_rate",
+            "shap_value": -2.548401117324829
+          },
+          {
+            "feature": "numeric__utility_shifting_delay_days",
+            "shap_value": -0.3301248550415039
+          },
+          {
+            "feature": "categorical__contractor_Rashtriya Roadways Pvt Ltd",
+            "shap_value": -0.24402131140232086
+          },
+          {
+            "feature": "numeric__progress_efficiency",
+            "shap_value": -0.21493729948997498
+          }
+        ],
+        "test_row_index": 1134,
+        "project_id": "HRI-0355",
+        "reporting_month": "2025-05",
+        "model_predicted_score": -12.408188819885254,
+        "actual_target_value": -11.76
+      }
+    },
+    "local_example_plots": {
+      "high": "docs\\artifacts\\cost_regression_shap_waterfall_high.png",
+      "low": "docs\\artifacts\\cost_regression_shap_waterfall_low.png"
+    }
+  }
+}
