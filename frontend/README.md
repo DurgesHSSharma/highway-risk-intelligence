@@ -1,7 +1,8 @@
 # Frontend
 
-React + Vite dashboard for the Highway Risk Intelligence prototype. Phase 1
-scope is a single page that checks the backend `/health` endpoint.
+React + Vite dashboard for the Highway Risk Intelligence prototype — see
+[../docs/FRONTEND_DASHBOARD.md](../docs/FRONTEND_DASHBOARD.md) for the full
+architecture, routes, design system, and browser-verification results.
 
 ## Setup
 
@@ -19,3 +20,5 @@ Runs at `http://localhost:5173` by default and expects the backend at
 - `npm run dev` — start the dev server
 - `npm run build` — production build to `dist/`
 - `npm run preview` — preview the production build locally
+- `npm run test` — run the frontend test suite once (vitest)
+- `npm run test:watch` — run the frontend test suite in watch mode

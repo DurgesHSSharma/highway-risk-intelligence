@@ -1,0 +1,321 @@
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useApi } from '../hooks/useApi'
+import { useProjectSnapshots } from '../hooks/useProjectSnapshots'
+import { getRiskSummary } from '../api/endpoints'
+import { latestSnapshot } from '../utils/snapshots'
+import AsyncSection, { EmptyState } from '../components/StateViews'
+import ProjectPicker from '../components/ProjectPicker'
+import MonthSelect from '../components/MonthSelect'
+import DisclaimerBox from '../components/DisclaimerBox'
+import DriverBar from '../components/DriverBar'
+import EvidenceResultCard from '../components/EvidenceResultCard'
+import InconsistencyCard from '../components/InconsistencyCard'
+import { ProbabilityTile, RegressionTile } from '../components/PredictionTiles'
+import { formatDays, formatPercent } from '../utils/format'
+import { IconSimulator } from '../components/icons'
+
+function ScenarioMetric({ label, before, after, unit }) {
+  const delta = before != null && after != null ? after - before : null
+  const trend = delta == null || Math.abs(delta) < 0.05 ? 'flat' : delta > 0 ? 'up' : 'down'
+  const fmt = (v) => (v == null ? '—' : unit === 'pct' ? formatPercent(v) : formatDays(v))
+  return (
+    <div className="metric-row">
+      <span>{label}</span>
+      <span>
+        {fmt(before)} → <strong>{fmt(after)}</strong>{' '}
+        {delta != null && (
+          <span className={`metric-delta ${trend}`}>
+            ({delta > 0 ? '+' : ''}
+            {unit === 'pct' ? delta.toFixed(1) : delta.toFixed(0)})
+          </span>
+        )}
+      </span>
+    </div>
+  )
+}
+
+export default function RiskSummary() {
+  const { projectId } = useParams()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  if (!projectId) {
+    return (
+      <ProjectPicker
+        title="AI Risk Summary"
+        description="Select a project to view its live model predictions, SHAP risk drivers, documentary evidence, and potential inconsistencies."
+        basePath={(id) => `/projects/${id}/risk-summary`}
+      />
+    )
+  }
+
+  return <ProjectRiskSummary projectId={projectId} searchParams={searchParams} setSearchParams={setSearchParams} navigate={navigate} />
+}
+
+function ProjectRiskSummary({ projectId, searchParams, setSearchParams, navigate }) {
+  const snapshots = useProjectSnapshots(projectId)
+  const monthFromUrl = searchParams.get('month')
+  const [selectedMonth, setSelectedMonth] = useState(monthFromUrl)
+
+  useEffect(() => {
+    if (!selectedMonth && snapshots.data && snapshots.data.length > 0) {
+      setSelectedMonth(latestSnapshot(snapshots.data).reporting_month)
+    }
+  }, [snapshots.data, selectedMonth])
+
+  function handleMonthChange(month) {
+    setSelectedMonth(month)
+    const next = new URLSearchParams(searchParams)
+    next.set('month', month)
+    setSearchParams(next, { replace: true })
+  }
+
+  const risk = useApi(
+    (signal) => getRiskSummary(projectId, selectedMonth, signal),
+    [projectId, selectedMonth],
+    { skip: !selectedMonth }
+  )
+
+  if (snapshots.status === 'error' && snapshots.error?.status === 404) {
+    return <EmptyState title={`Project "${projectId}" was not found.`} message="Check the project ID and try again." />
+  }
+
+  const maxAbs = (drivers) => Math.max(0.001, ...drivers.map((d) => Math.abs(d.shap_value)))
+
+  return (
+    <div className="stack">
+      <div className="page-header">
+        <div>
+          <h1>AI Risk Summary</h1>
+          <p>
+            Live model predictions, per-instance SHAP drivers, documentary evidence, and potential inconsistencies for{' '}
+            <strong>{projectId}</strong>.
+          </p>
+        </div>
+        <div className="page-header-actions">
+          {snapshots.data && (
+            <MonthSelect snapshots={snapshots.data} value={selectedMonth} onChange={handleMonthChange} id="risk-summary-month" />
+          )}
+          <button type="button" className="btn" onClick={() => navigate(`/projects/${projectId}/simulator?month=${selectedMonth || ''}`)}>
+            <IconSimulator size={15} /> Open Simulator
+          </button>
+        </div>
+      </div>
+
+      <AsyncSection
+        status={risk.status}
+        error={risk.error}
+        data={risk.data}
+        onRetry={risk.reload}
+        loadingLabel="Computing live risk summary (prediction + SHAP + evidence)…"
+        errorTitle="Unable to load the risk summary."
+      >
+        {(data) => (
+          <>
+            <div className="card card-padded">
+              <div className="card-header">
+                <h2>
+                  {data.project.project_name} ({data.project.project_id})
+                </h2>
+                <span className="badge badge-info">
+                  {data.prediction_status === 'actual_outcome' ? 'Recorded final outcome' : 'Live model prediction'}
+                </span>
+              </div>
+              <p className="muted" style={{ fontSize: 12.5 }}>
+                {data.project.state} · {data.project.project_type} · reporting month {data.project.reporting_month} ·{' '}
+                {data.project.months_since_start} months since start
+              </p>
+
+              <div className="grid kpi-grid">
+                <ProbabilityTile
+                  title="Significant Delay"
+                  isActual={data.prediction_status === 'actual_outcome'}
+                  probability={data.predictions.significant_delay.probability_of_significant_delay}
+                  predictedClass={data.predictions.significant_delay.predicted_class}
+                  actualValue={data.predictions.significant_delay.actual_value}
+                  statusLabel={data.predictions.significant_delay.model_used ? `Model: ${data.predictions.significant_delay.model_used}` : 'Recorded outcome'}
+                  summaryText={data.risk_summary.significant_delay_summary}
+                />
+                <RegressionTile
+                  title="Predicted Delay Duration"
+                  unit="days"
+                  value={data.predictions.final_delay_days.predicted_final_delay_days ?? data.predictions.final_delay_days.actual_value}
+                  statusLabel={data.predictions.final_delay_days.model_used ? `Model: ${data.predictions.final_delay_days.model_used}` : 'Recorded outcome'}
+                  summaryText={data.risk_summary.final_delay_days_summary}
+                />
+                <ProbabilityTile
+                  title="Cost Overrun"
+                  isActual={data.prediction_status === 'actual_outcome'}
+                  probability={data.predictions.cost_overrun.probability_of_cost_overrun}
+                  predictedClass={data.predictions.cost_overrun.predicted_class}
+                  actualValue={data.predictions.cost_overrun.actual_value}
+                  statusLabel={data.predictions.cost_overrun.model_used ? `Model: ${data.predictions.cost_overrun.model_used}` : 'Recorded outcome'}
+                  summaryText={data.risk_summary.cost_overrun_summary}
+                />
+                <RegressionTile
+                  title="Predicted Cost Overrun %"
+                  unit="pct"
+                  value={
+                    data.predictions.final_cost_overrun_pct.predicted_final_cost_overrun_pct ??
+                    data.predictions.final_cost_overrun_pct.actual_value
+                  }
+                  statusLabel={data.predictions.final_cost_overrun_pct.model_used ? `Model: ${data.predictions.final_cost_overrun_pct.model_used}` : 'Recorded outcome'}
+                  summaryText={data.risk_summary.final_cost_overrun_pct_summary}
+                />
+              </div>
+
+              <div className="disclaimer-box" style={{ marginTop: 4 }}>
+                Evidence strength: <strong>{data.evidence_strength}</strong> — {data.evidence_strength_basis}
+              </div>
+            </div>
+
+            {data.recommended_reviews.length > 0 && (
+              <div className="card card-padded">
+                <div className="card-header">
+                  <h2>Recommended Reviews</h2>
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {data.recommended_reviews.map((rec, i) => (
+                    <li key={i} style={{ fontSize: 12.5 }}>
+                      {rec.text}
+                      <div className="muted" style={{ fontSize: 11 }}>
+                        Basis: {rec.basis_type.replace(/_/g, ' ')} — {rec.basis_detail}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="card card-padded">
+              <div className="card-header">
+                <h2>Live SHAP Risk Drivers</h2>
+              </div>
+              {data.risk_drivers.length === 0 ? (
+                <DisclaimerBox warn>{data.shap_skipped_reason}</DisclaimerBox>
+              ) : (
+                <div className="grid two-col-grid">
+                  {data.risk_drivers.map((task) => (
+                    <div key={task.task_key} style={{ marginBottom: 14 }}>
+                      <div className="section-title" style={{ fontSize: 13 }}>
+                        {task.label}
+                      </div>
+                      <p className="muted" style={{ fontSize: 11, marginTop: -6 }}>
+                        {task.model_used} · {task.explainer_type} · {task.shap_output_semantics}
+                      </p>
+                      {task.top_drivers.map((d) => (
+                        <DriverBar key={d.rank} driver={d} maxAbs={maxAbs(task.top_drivers)} />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="card card-padded">
+              <div className="card-header">
+                <h2>Supporting Evidence</h2>
+              </div>
+              <div className="stack">
+                {data.documentary_evidence.map((item, i) => (
+                  <div key={i}>
+                    <div className="info-item-label">Query: “{item.query}”</div>
+                    {item.not_found ? (
+                      <EmptyState title="Not found in the available documents." />
+                    ) : (
+                      <>
+                        <p className="evidence-text">{item.answer}</p>
+                        <div className="stack" style={{ gap: 8 }}>
+                          {item.results.map((r) => (
+                            <EvidenceResultCard key={r.chunk_id} result={r} />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card card-padded">
+              <div className="card-header">
+                <h2>Potential Inconsistencies</h2>
+              </div>
+              {data.potential_inconsistencies.length === 0 ? (
+                <EmptyState
+                  title="No potential inconsistencies surfaced for this evidence."
+                  message="This is not a claim that the underlying documents are free of inconsistencies — only that none were flagged for the evidence retrieved here."
+                />
+              ) : (
+                <div className="stack" style={{ gap: 10 }}>
+                  {data.potential_inconsistencies.map((flag) => (
+                    <InconsistencyCard key={flag.flag_id} flag={flag} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="card card-padded">
+              <div className="card-header">
+                <h2>Illustrative What-if Scenario</h2>
+                <span className="badge badge-info">Illustrative, not a recommendation</span>
+              </div>
+              {data.scenario ? (
+                <>
+                  <p className="muted" style={{ fontSize: 12.5 }}>
+                    {data.scenario.label} — <strong>{data.scenario.field}</strong> moved to its training-partition mean (
+                    {data.scenario.reference_value}).
+                  </p>
+                  <div className="compare-col-label">Baseline → Simulated</div>
+                  <ScenarioMetric
+                    label="Delay probability"
+                    unit="pct"
+                    before={data.scenario.baseline.significant_delay.probability_of_significant_delay * 100}
+                    after={data.scenario.simulated.significant_delay.probability_of_significant_delay * 100}
+                  />
+                  <ScenarioMetric
+                    label="Delay days"
+                    unit="days"
+                    before={data.scenario.baseline.final_delay_days.predicted_final_delay_days}
+                    after={data.scenario.simulated.final_delay_days.predicted_final_delay_days}
+                  />
+                  <ScenarioMetric
+                    label="Cost overrun probability"
+                    unit="pct"
+                    before={data.scenario.baseline.cost_overrun.probability_of_cost_overrun * 100}
+                    after={data.scenario.simulated.cost_overrun.probability_of_cost_overrun * 100}
+                  />
+                  <ScenarioMetric
+                    label="Cost overrun %"
+                    unit="pct"
+                    before={data.scenario.baseline.final_cost_overrun_pct.predicted_final_cost_overrun_pct}
+                    after={data.scenario.simulated.final_cost_overrun_pct.predicted_final_cost_overrun_pct}
+                  />
+                  <DisclaimerBox>{data.scenario.disclaimer}</DisclaimerBox>
+                </>
+              ) : (
+                <DisclaimerBox warn>{data.scenario_skipped_reason}</DisclaimerBox>
+              )}
+            </div>
+
+            <div className="card card-padded">
+              <div className="card-header">
+                <h2>Disclaimers</h2>
+              </div>
+              <div className="disclaimer-list">
+                <DisclaimerBox>{data.disclaimers.system_identity}</DisclaimerBox>
+                <DisclaimerBox>{data.disclaimers.ml_limitation}</DisclaimerBox>
+                <DisclaimerBox>{data.disclaimers.causality_limitation}</DisclaimerBox>
+                <DisclaimerBox>{data.disclaimers.scenario_limitation}</DisclaimerBox>
+                <DisclaimerBox>{data.disclaimers.evidence_limitation}</DisclaimerBox>
+                <DisclaimerBox>{data.disclaimers.inconsistency_limitation}</DisclaimerBox>
+                <DisclaimerBox>{data.disclaimers.synthetic_data_disclaimer}</DisclaimerBox>
+              </div>
+            </div>
+          </>
+        )}
+      </AsyncSection>
+    </div>
+  )
+}

@@ -1,0 +1,51 @@
+:root {
+  --navy-900: #0a1830;
+  --navy-800: #0f2142;
+  --navy-700: #15325a;
+  --navy-600: #1c4270;
+
+  --blue-700: #1d4ed8;
+  --blue-600: #2563eb;
+  --blue-500: #3b82f6;
+  --blue-100: #dbeafe;
+  --blue-50: #eff6ff;
+
+  --bg: #f3f5f9;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --text-primary: #101828;
+  --text-secondary: #475467;
+  --text-muted: #667085;
+  --text-on-navy: #eaf0fb;
+  --text-on-navy-muted: #93a5c4;
+
+  --risk-high: #b42318;
+  --risk-high-fg: #b42318;
+  --risk-high-bg: #fef3f2;
+  --risk-high-border: #fda29b;
+
+  --risk-medium: #b54708;
+  --risk-medium-fg: #b54708;
+  --risk-medium-bg: #fffaeb;
+  --risk-medium-border: #fec84b;
+
+  --risk-low: #067647;
+  --risk-low-fg: #067647;
+  --risk-low-bg: #ecfdf3;
+  --risk-low-border: #6ce9a6;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 2px 8px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 8px 24px rgba(16, 24, 40, 0.12);
+
+  --font-sans: 'Segoe UI', system-ui, -apple-system, 'Inter', Roboto, Arial, sans-serif;
+  --sidebar-width: 264px;
+  --topbar-height: 64px;
+}

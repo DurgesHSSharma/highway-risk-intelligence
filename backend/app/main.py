@@ -9,7 +9,7 @@ from app.db.base import create_all
 from app.ml.registry import load_models
 from app.ml.training_ranges import load_training_ranges
 from app.rag.retrieval import get_retrieval_service
-from app.routers import decision_support, documents, predictions, projects, simulation
+from app.routers import analytics, decision_support, documents, predictions, projects, simulation
 
 
 @asynccontextmanager
@@ -52,6 +52,7 @@ app.include_router(predictions.router)
 app.include_router(simulation.router)
 app.include_router(documents.router)
 app.include_router(decision_support.router)
+app.include_router(analytics.router)
 
 
 @app.get("/")

@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 8 complete (RAG retrieval with citation-grounded extractive answers)
+## Status: Phase 12 complete (professional React/Vite frontend dashboard integrated with the full Phase 1-11 backend)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -315,6 +315,38 @@ Try it, e.g.:
 or open `http://127.0.0.1:8000/docs` for interactive Swagger docs. See
 [docs/RAG_SYSTEM.md](docs/RAG_SYSTEM.md) for the full pipeline, threshold
 rationale, test-question methodology, and the local-LLM decision.
+
+## Frontend dashboard (Phase 12)
+
+A full React/Vite dashboard (`frontend/`) branded **HRI — Highway Risk
+Intelligence** ("PREDICT DELAYS • CONTROL COSTS") now sits in front of the
+Phase 1-11 backend: Dashboard, Projects, Project Details, AI Risk Summary,
+What-if Simulator, Document Search, Inconsistencies, Analytics, and Reports.
+Every number shown comes from a real backend call (no hard-coded mockup
+data); hedged wording ("potential inconsistency requiring verification",
+"illustrative, not a recommendation") is preserved verbatim from the
+backend, never rewritten client-side. One small, purely additive backend
+endpoint was added for this phase — `GET /analytics/summary`
+(`backend/app/routers/analytics.py`) — a read-only SQL aggregate over the
+existing `projects`/`project_snapshots` tables for portfolio-wide KPI/chart
+data that no Phase 1-11 endpoint exposed; no existing endpoint or ML/RAG/
+contradiction/simulator logic was changed. See
+[docs/FRONTEND_DASHBOARD.md](docs/FRONTEND_DASHBOARD.md) for the full
+architecture, design system, and browser-verification results.
+
+Run both servers locally:
+
+```bash
+cd backend
+./.venv/Scripts/python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+```bash
+cd frontend
+npm run dev
+```
+
+Then open `http://127.0.0.1:5173`.
 
 ## Project layout
 
