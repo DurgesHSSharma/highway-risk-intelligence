@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 7 complete (PDF ingestion pipeline with OCR fallback and chunking)
+## Status: Phase 8 complete (RAG retrieval with citation-grounded extractive answers)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -95,6 +95,25 @@ unavailable (blocked by bot-protection, and not direct PDF links regardless
 — see [docs/DOCUMENT_INGESTION.md](docs/DOCUMENT_INGESTION.md)). **This
 phase produces a chunk dataset only — no embeddings, vector store,
 retrieval, or LLM integration is implemented yet.**
+
+Phase 8 adds local embeddings + a FAISS vector index over the Phase 7 chunk
+dataset, with a **required, zero-LLM extractive** answer mode as the
+default (`scripts/build_rag_index.py`, `backend/app/rag/`):
+`sentence-transformers/all-MiniLM-L6-v2` (free, local, 384-dim, CPU-only)
+embeds all 861 usable chunks (0 excluded — Phase 7 already drops truly empty
+OCR pages before they become chunk rows; `suspicious_text`/`low_ocr_quality`
+chunks are kept and flagged, not dropped), indexed with an exact
+`faiss.IndexFlatIP` (cosine similarity via inner product on L2-normalized
+vectors — no approximate index, the corpus is far too small to need one). A
+relevance threshold of 0.35 (empirically chosen — see
+[docs/RAG_SYSTEM.md](docs/RAG_SYSTEM.md) section 9) separates genuine
+in-corpus matches from out-of-corpus queries, which correctly return `"Not
+found in the available documents."` instead of a fabricated answer. A local
+LLM was evaluated and **not enabled** — measured free RAM (~1-1.8 GB of
+15.69 GB total) was well below the phase's stated comfort threshold; see
+[docs/RAG_SYSTEM.md](docs/RAG_SYSTEM.md) section 19. **No contradiction
+detection, what-if simulator, decision-support synthesis, or dashboard/
+frontend integration is implemented yet.**
 
 ## Prerequisites
 
@@ -264,6 +283,38 @@ present under `data/documents/raw/`, and writes
 [docs/DOCUMENT_INGESTION.md](docs/DOCUMENT_INGESTION.md) for the extraction
 heuristics (PyMuPDF primary, pdfplumber table-aware fallback, Tesseract OCR
 fallback), the chunking strategy, and the actual run statistics.
+
+## RAG retrieval (Phase 8)
+
+Build the local FAISS index (skips regeneration if the source chunk CSV and
+embedding model are unchanged — pass `--force` to rebuild anyway):
+
+```bash
+./backend/.venv/Scripts/python.exe -m scripts.build_rag_index
+```
+
+Writes `rag_index/document_chunks.faiss`, `rag_index/embeddings.npy`, and
+`rag_index/metadata.json` (the full vector-to-chunk citation mapping).
+These files are small (~1.3 MB each) and are committed to the repo for
+reproducibility, same as the Phase 4/5 model artifacts.
+
+Start the API (same command as Phase 1/6 — the existing app was extended,
+not replaced) and query it:
+
+```bash
+cd backend
+./.venv/Scripts/python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+```
+GET /documents/search?q=<your question>&top_k=5
+```
+
+Try it, e.g.:
+`GET /documents/search?q=How much money has NHAI raised through the InvIT mode?`
+or open `http://127.0.0.1:8000/docs` for interactive Swagger docs. See
+[docs/RAG_SYSTEM.md](docs/RAG_SYSTEM.md) for the full pipeline, threshold
+rationale, test-question methodology, and the local-LLM decision.
 
 ## Project layout
 

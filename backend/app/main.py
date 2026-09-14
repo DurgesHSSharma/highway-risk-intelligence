@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db.base import create_all
 from app.ml.registry import load_models
-from app.routers import predictions, projects
+from app.rag.retrieval import get_retrieval_service
+from app.routers import documents, predictions, projects
 
 
 @asynccontextmanager
@@ -18,6 +19,10 @@ async def lifespan(app: FastAPI):
     # artifact is missing -- see app/ml/registry.py. Models are loaded once
     # here, never per-request.
     load_models()
+    # Phase 8: loads the FAISS index + embedding model once (see
+    # app/rag/retrieval.py). Fails loudly if the index hasn't been built yet
+    # (run `python -m scripts.build_rag_index` first).
+    get_retrieval_service()
     yield
 
 
@@ -33,6 +38,7 @@ app.add_middleware(
 
 app.include_router(projects.router)
 app.include_router(predictions.router)
+app.include_router(documents.router)
 
 
 @app.get("/")

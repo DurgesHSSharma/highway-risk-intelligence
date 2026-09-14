@@ -24,6 +24,7 @@ from app.config import REPO_ROOT, settings  # noqa: E402
 from app.db.loader import load_database  # noqa: E402
 from app.main import app  # noqa: E402
 from app.ml.registry import load_models  # noqa: E402
+from app.rag.retrieval import get_retrieval_service  # noqa: E402
 
 DATASET_CSV_PATH = REPO_ROOT / "data" / "synthetic" / "highway_project_snapshots.csv"
 
@@ -41,6 +42,15 @@ def _phase6_test_database():
     summary = load_database(DATASET_CSV_PATH)
     load_models()
     yield summary
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _phase8_rag_index():
+    """Loads the real Phase 8 FAISS index + embedding model exactly once for
+    the whole test session (same rationale as `_phase6_test_database` above:
+    resource-conscious, never reloaded per test). Uses the real committed
+    rag_index/ built from the real document corpus -- never a fake index."""
+    yield get_retrieval_service()
 
 
 @pytest.fixture(scope="session")

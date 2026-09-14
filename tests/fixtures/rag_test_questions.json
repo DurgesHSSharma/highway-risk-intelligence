@@ -1,0 +1,102 @@
+{
+  "_comment": "Phase 8 hand-built retrieval test set. Every question was written after reading actual chunk text from data/processed/document_chunks.csv (not guessed from document titles/filenames), and every expected_document_id/expected_page_number was verified by running the real retrieval service against the built index (see docs/RAG_SYSTEM.md 'Test-question methodology'). expected_min_rank is the worst rank (at top_k=5) the expected chunk was observed at during that verification run -- used by the test suite to assert the expected chunk stays within top-k, not necessarily rank 1.",
+  "in_corpus": [
+    {
+      "id": "Q1",
+      "question": "What was the Delhi-Vadodara Expressway cost-benefit analysis compared against?",
+      "expected_document_id": "DOC-001",
+      "expected_page_number": 60,
+      "expected_min_rank": 1,
+      "observed_score": 0.7862
+    },
+    {
+      "id": "Q2",
+      "question": "What change of scope was recommended for the Hapur Bypass-Moradabad project?",
+      "expected_document_id": "DOC-001",
+      "expected_page_number": 226,
+      "expected_min_rank": 1,
+      "observed_score": 0.6363
+    },
+    {
+      "id": "Q3",
+      "question": "How does information technology supplement monitoring and improve governance according to the CAG audit report?",
+      "expected_document_id": "DOC-001",
+      "expected_page_number": 189,
+      "expected_min_rank": 2,
+      "observed_score": 0.5052
+    },
+    {
+      "id": "Q4",
+      "question": "How many congestion points were identified on the highway network by NHAI?",
+      "expected_document_id": "DOC-002",
+      "expected_page_number": 26,
+      "expected_min_rank": 1,
+      "observed_score": 0.6971
+    },
+    {
+      "id": "Q5",
+      "question": "How many Regional Offices and Project Implementation Units does NHAI have?",
+      "expected_document_id": "DOC-002",
+      "expected_page_number": 16,
+      "expected_min_rank": 1,
+      "observed_score": 0.7175
+    },
+    {
+      "id": "Q6",
+      "question": "How much money has NHAI raised through the Infrastructure Investment Trust InvIT mode?",
+      "expected_document_id": "DOC-003",
+      "expected_page_number": 27,
+      "expected_min_rank": 1,
+      "observed_score": 0.7525
+    },
+    {
+      "id": "Q7",
+      "question": "What percentage of e-office work has been achieved in MoRTH?",
+      "expected_document_id": "DOC-003",
+      "expected_page_number": 99,
+      "expected_min_rank": 2,
+      "observed_score": 0.4587
+    },
+    {
+      "id": "Q8",
+      "question": "What percentage of India's domestic freight demand is transported by trucks on road?",
+      "expected_document_id": "DOC-004",
+      "expected_page_number": 5,
+      "expected_min_rank": 4,
+      "observed_score": 0.6263
+    },
+    {
+      "id": "Q9",
+      "question": "Why do some highway projects get stalled at the construction stage?",
+      "expected_document_id": "DOC-004",
+      "expected_page_number": 7,
+      "expected_min_rank": 4,
+      "observed_score": 0.5031
+    },
+    {
+      "id": "Q10",
+      "question": "In what year was the Bharatmala Pariyojana Phase-I approved by the central government?",
+      "expected_document_id": "DOC-004",
+      "expected_page_number": 2,
+      "expected_min_rank": 4,
+      "observed_score": 0.6528
+    }
+  ],
+  "out_of_corpus": [
+    {
+      "id": "OOC1",
+      "question": "What is the recipe for making chocolate cake?",
+      "observed_top_score": 0.1764
+    },
+    {
+      "id": "OOC2",
+      "question": "What are the official rules of chess?",
+      "observed_top_score": 0.2419
+    },
+    {
+      "id": "OOC3",
+      "question": "How does photosynthesis work in plants?",
+      "observed_top_score": 0.2438
+    }
+  ]
+}

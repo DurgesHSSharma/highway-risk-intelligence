@@ -24,7 +24,22 @@ data/
         ├── cag_bharatmala_phase1_performance_audit_2023.pdf   REAL PUBLIC DATA (downloaded Phase 7)
         ├── nhai_annual_report_2022-23.pdf                     REAL PUBLIC DATA (downloaded Phase 7)
         └── morth_annual_report_2024-25.pdf                    REAL PUBLIC DATA (downloaded Phase 7)
+
+../rag_index/                          (repo root, not under data/ — Phase 8)
+├── document_chunks.faiss               DERIVED DATA — FAISS index over document_chunks.csv
+├── embeddings.npy                      DERIVED DATA — (861, 384) float32 embedding matrix
+└── metadata.json                       DERIVED DATA — vector-to-chunk citation mapping
 ```
+
+## `../rag_index/` — DERIVED DATA (Phase 8)
+
+Local embeddings (`sentence-transformers/all-MiniLM-L6-v2`, 384-dim) and a
+FAISS `IndexFlatIP` exact index built from `processed/document_chunks.csv`
+(all 861 chunks — 0 excluded, see [docs/RAG_SYSTEM.md](../docs/RAG_SYSTEM.md)
+section 3 for why). Regenerate with
+`./backend/.venv/Scripts/python.exe -m scripts.build_rag_index`. See
+[docs/RAG_SYSTEM.md](../docs/RAG_SYSTEM.md) for the full pipeline, the
+relevance threshold, and citation format.
 
 ## `synthetic/highway_project_snapshots.csv` — SYNTHETIC DATA
 
