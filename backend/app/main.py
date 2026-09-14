@@ -7,8 +7,9 @@ from app.config import settings
 from app.contradiction.detector import get_detection_summary
 from app.db.base import create_all
 from app.ml.registry import load_models
+from app.ml.training_ranges import load_training_ranges
 from app.rag.retrieval import get_retrieval_service
-from app.routers import documents, predictions, projects
+from app.routers import documents, predictions, projects, simulation
 
 
 @asynccontextmanager
@@ -20,6 +21,11 @@ async def lifespan(app: FastAPI):
     # artifact is missing -- see app/ml/registry.py. Models are loaded once
     # here, never per-request.
     load_models()
+    # Phase 10: loads the Phase 4 TRAINING-split numeric feature ranges used
+    # by the what-if simulator's extrapolation-warning check, once, exactly
+    # like the model artifacts above -- fails loudly if the committed
+    # artifact is missing (see app/ml/training_ranges.py).
+    load_training_ranges()
     # Phase 8: loads the FAISS index + embedding model once (see
     # app/rag/retrieval.py). Fails loudly if the index hasn't been built yet
     # (run `python -m scripts.build_rag_index` first).
@@ -43,6 +49,7 @@ app.add_middleware(
 
 app.include_router(projects.router)
 app.include_router(predictions.router)
+app.include_router(simulation.router)
 app.include_router(documents.router)
 
 

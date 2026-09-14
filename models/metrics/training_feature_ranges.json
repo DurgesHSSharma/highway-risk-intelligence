@@ -1,0 +1,236 @@
+{
+  "run_metadata": {
+    "generated_at_utc": "2026-09-14T09:29:05.721917+00:00",
+    "source_features_file": "data/processed/delay_features.csv",
+    "split_module": "scripts.data_split.project_level_split",
+    "split_partition_used": "train",
+    "seed": 42,
+    "train_frac": 0.7,
+    "val_frac": 0.15,
+    "terminal_snapshot_excluded": true,
+    "n_train_projects": 280,
+    "n_train_rows": 5834,
+    "categorical_columns_excluded": [
+      "state",
+      "project_type",
+      "contractor"
+    ],
+    "python_version": "3.12.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "pandas_version": "2.2.3",
+    "numpy_version": "2.1.3",
+    "note": "Bounds are computed ONLY from the Phase 4 TRAINING partition (never validation/test/full-dataset/live-snapshot data). See docs/WHATIF_SIMULATOR.md section 11 for how this artifact is used."
+  },
+  "numeric_feature_ranges": {
+    "project_length_km": {
+      "min": 1.0,
+      "max": 111.07,
+      "n_non_null": 5834
+    },
+    "original_contract_value_inr_cr": {
+      "min": 87.83,
+      "max": 5093.39,
+      "n_non_null": 5834
+    },
+    "planned_duration_months": {
+      "min": 12.0,
+      "max": 60.0,
+      "n_non_null": 5834
+    },
+    "months_since_start": {
+      "min": 1.0,
+      "max": 73.0,
+      "n_non_null": 5834
+    },
+    "planned_physical_progress_pct": {
+      "min": 0.08,
+      "max": 100.0,
+      "n_non_null": 5834
+    },
+    "actual_physical_progress_pct": {
+      "min": 0.77,
+      "max": 99.98,
+      "n_non_null": 5834
+    },
+    "physical_progress_variance_pct": {
+      "min": -42.79,
+      "max": 16.83,
+      "n_non_null": 5834
+    },
+    "planned_financial_progress_pct": {
+      "min": 0.08,
+      "max": 100.0,
+      "n_non_null": 5834
+    },
+    "actual_financial_progress_pct": {
+      "min": 0.75,
+      "max": 100.0,
+      "n_non_null": 5590
+    },
+    "financial_progress_variance_pct": {
+      "min": -48.83,
+      "max": 17.46,
+      "n_non_null": 5590
+    },
+    "planned_cost_to_date_inr_cr": {
+      "min": 1.35,
+      "max": 5093.39,
+      "n_non_null": 5834
+    },
+    "actual_expenditure_inr_cr": {
+      "min": 5.02,
+      "max": 4901.09,
+      "n_non_null": 5590
+    },
+    "actual_cost_to_date_inr_cr": {
+      "min": 5.13,
+      "max": 5894.79,
+      "n_non_null": 5834
+    },
+    "material_cost_inr_cr": {
+      "min": 2.73,
+      "max": 3100.38,
+      "n_non_null": 5834
+    },
+    "labour_cost_inr_cr": {
+      "min": 1.46,
+      "max": 1371.1,
+      "n_non_null": 5834
+    },
+    "equipment_cost_inr_cr": {
+      "min": 0.92,
+      "max": 1036.53,
+      "n_non_null": 5834
+    },
+    "variation_cost_inr_cr": {
+      "min": 0.0,
+      "max": 375.92,
+      "n_non_null": 5649
+    },
+    "delay_related_cost_inr_cr": {
+      "min": 0.0,
+      "max": 15.61,
+      "n_non_null": 5834
+    },
+    "contractor_productivity_factor": {
+      "min": 0.498,
+      "max": 1.35,
+      "n_non_null": 5834
+    },
+    "land_acquisition_delay_days": {
+      "min": 0.0,
+      "max": 137.2,
+      "n_non_null": 5834
+    },
+    "utility_shifting_delay_days": {
+      "min": 0.0,
+      "max": 75.1,
+      "n_non_null": 5834
+    },
+    "environment_clearance_delay_days": {
+      "min": 0.0,
+      "max": 125.5,
+      "n_non_null": 5834
+    },
+    "material_delay_days": {
+      "min": 0.0,
+      "max": 96.9,
+      "n_non_null": 5834
+    },
+    "labour_shortage_days": {
+      "min": 0.0,
+      "max": 39.3,
+      "n_non_null": 5834
+    },
+    "equipment_unavailability_days": {
+      "min": 0.0,
+      "max": 27.5,
+      "n_non_null": 5661
+    },
+    "weather_disruption_days": {
+      "min": 0.0,
+      "max": 214.4,
+      "n_non_null": 5675
+    },
+    "traffic_diversion_delay_days": {
+      "min": 0.0,
+      "max": 22.4,
+      "n_non_null": 5834
+    },
+    "design_change_delay_days": {
+      "min": 0.0,
+      "max": 63.7,
+      "n_non_null": 5834
+    },
+    "approval_delay_days": {
+      "min": 0.0,
+      "max": 98.9,
+      "n_non_null": 5834
+    },
+    "expenditure_gap_inr_cr": {
+      "min": -1425.2400000000002,
+      "max": 379.04,
+      "n_non_null": 5590
+    },
+    "cost_tracking_gap_inr_cr": {
+      "min": -1073.2199999999998,
+      "max": 329.99,
+      "n_non_null": 5590
+    },
+    "delay_factor_count": {
+      "min": 0.0,
+      "max": 10.0,
+      "n_non_null": 5508
+    },
+    "delay_factor_severity": {
+      "min": 0.0,
+      "max": 521.6,
+      "n_non_null": 5508
+    },
+    "project_age_ratio": {
+      "min": 0.0166666666666666,
+      "max": 1.5,
+      "n_non_null": 5834
+    },
+    "months_to_planned_completion": {
+      "min": -17.0,
+      "max": 59.0,
+      "n_non_null": 5834
+    },
+    "schedule_pressure": {
+      "min": 0.019999999999996,
+      "max": 43.06,
+      "n_non_null": 5834
+    },
+    "progress_efficiency": {
+      "min": 0.5219372477541987,
+      "max": 5.0,
+      "n_non_null": 5834
+    },
+    "cost_growth_rate": {
+      "min": 0.6616940265901005,
+      "max": 5.0,
+      "n_non_null": 5834
+    },
+    "recent_progress_trend_3m": {
+      "min": 0.4666666666666662,
+      "max": 10.676666666666668,
+      "n_non_null": 5834
+    },
+    "recent_cost_trend_3m": {
+      "min": 5.13,
+      "max": 186.04,
+      "n_non_null": 5834
+    },
+    "consecutive_underperforming_months": {
+      "min": 0.0,
+      "max": 33.0,
+      "n_non_null": 5834
+    },
+    "recent_adverse_events_3m": {
+      "min": 0.0,
+      "max": 3.0,
+      "n_non_null": 5834
+    }
+  }
+}

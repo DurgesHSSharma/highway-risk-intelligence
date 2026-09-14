@@ -25,6 +25,7 @@ from app.contradiction.detector import get_detection_summary  # noqa: E402
 from app.db.loader import load_database  # noqa: E402
 from app.main import app  # noqa: E402
 from app.ml.registry import load_models  # noqa: E402
+from app.ml.training_ranges import load_training_ranges  # noqa: E402
 from app.rag.retrieval import get_retrieval_service  # noqa: E402
 
 DATASET_CSV_PATH = REPO_ROOT / "data" / "synthetic" / "highway_project_snapshots.csv"
@@ -42,6 +43,10 @@ def _phase6_test_database():
     )
     summary = load_database(DATASET_CSV_PATH)
     load_models()
+    # Phase 10: loaded explicitly here too (not just via app startup) so
+    # tests that call app.simulation.* directly against `db_session` (never
+    # touching the FastAPI `client`) still have training ranges available.
+    load_training_ranges()
     yield summary
 
 
