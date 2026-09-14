@@ -206,6 +206,16 @@ export function IconPrint(props) {
   )
 }
 
+export function IconDownload(props) {
+  return (
+    <Svg {...props}>
+      <path d="M12 4v11" />
+      <path d="M7.5 11.5 12 16l4.5-4.5" />
+      <path d="M4.5 18.5h15" />
+    </Svg>
+  )
+}
+
 export function IconRoad(props) {
   return (
     <Svg {...props}>

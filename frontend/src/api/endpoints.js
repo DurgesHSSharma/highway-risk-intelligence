@@ -1,13 +1,16 @@
 // One typed-by-JSDoc function per backend endpoint actually implemented in
 // backend/app/routers/*.py. Nothing here is speculative -- every path and
 // query/body param matches the FastAPI route signature it calls.
-import { apiGet, apiPost } from './client'
+import { apiGet, apiGetBlob, apiPost } from './client'
 
 export const getHealth = (signal) => apiGet('/health', undefined, signal)
 
 /**
  * GET /projects
- * @param {{page?: number, page_size?: number, state?: string, project_type?: string, project_status?: string}} params
+ * @param {{page?: number, page_size?: number, q?: string, state?: string, project_type?: string, project_status?: string}} params
+ * `q` (Phase 13) is a case-insensitive partial-match search performed in
+ * SQL on the backend across project_id/project_name/highway_number/state/
+ * contractor/project_type -- never a client-side filter.
  */
 export const listProjects = (params, signal) => apiGet('/projects', params, signal)
 
@@ -50,3 +53,11 @@ export const getInconsistencies = (signal) => apiGet('/documents/inconsistencies
 
 /** GET /analytics/summary (Phase 12 addition, see backend/app/routers/analytics.py) */
 export const getPortfolioSummary = (signal) => apiGet('/analytics/summary', undefined, signal)
+
+/**
+ * GET /projects/{project_id}/report.pdf?reporting_month=YYYY-MM (Phase 13)
+ * Resolves to `{blob, filename}` for a genuine backend-generated PDF (see
+ * backend/app/routers/reports.py) -- never a client-side/print-based export.
+ */
+export const downloadReportPdf = (projectId, reportingMonth, signal) =>
+  apiGetBlob(`/projects/${encodeURIComponent(projectId)}/report.pdf`, { reporting_month: reportingMonth }, signal)

@@ -1,11 +1,20 @@
 """Project CRUD (read-only) endpoints: GET /projects, GET /projects/{id},
 GET /projects/{id}/snapshots, GET /projects/{id}/snapshots/{reporting_month}.
+
+Phase 13 adds real server-side search to GET /projects via the `q` query
+parameter (see `_search_filter` below) -- it replaces the Phase 12
+frontend's client-side full-list search, which fetched all 400 projects
+into the browser and filtered there because this endpoint previously had no
+free-text query param. Search now happens entirely in SQL, is paginated
+after filtering (same as the existing `state`/`project_type`/
+`project_status` filters), and composes with them via AND. See
+docs/PHASE_13.md for the full contract.
 """
 
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -14,6 +23,39 @@ from app.db.models import Project, ProjectSnapshot
 from app.schemas.projects import ProjectListResponse, ProjectOut, SnapshotOut
 
 router = APIRouter(prefix="/projects", tags=["projects"])
+
+# Fields searched by `q`, matching the Phase 13 brief's candidate list
+# filtered down to columns that actually exist on `Project` (there is no
+# `highway` column -- the real column is `highway_number`, see
+# backend/app/db/models.py).
+SEARCHABLE_COLUMNS = (
+    Project.project_id,
+    Project.project_name,
+    Project.highway_number,
+    Project.state,
+    Project.contractor,
+    Project.project_type,
+)
+
+
+def _escape_like(value: str) -> str:
+    """Escapes SQL LIKE wildcards (`%`, `_`) and the escape character
+    itself so a literal search term (e.g. a contractor name containing
+    `_`) can't be misinterpreted as a pattern -- paired with
+    `.ilike(..., escape="\\")` below."""
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def _search_filter(q: str):
+    """Case-insensitive partial match across `SEARCHABLE_COLUMNS`, ORed
+    together. `.ilike()` is used (not `.like()`) so matching is
+    case-insensitive on every backend, including SQLite, which has no
+    native ILIKE -- SQLAlchemy compiles it to `lower(col) LIKE lower(...)`.
+    `contractor` is nullable (~0.9% of projects); `ilike` on a NULL column
+    safely evaluates to NULL/false rather than matching, which is the
+    desired "no match" behavior."""
+    pattern = f"%{_escape_like(q)}%"
+    return or_(*(col.ilike(pattern, escape="\\") for col in SEARCHABLE_COLUMNS))
 
 
 def _current_status_subquery():
@@ -55,6 +97,15 @@ def _current_status_subquery():
 def list_projects(
     page: int = Query(1, ge=1),
     page_size: int = Query(settings.default_page_size, ge=1, le=settings.max_page_size),
+    q: str | None = Query(
+        None,
+        description=(
+            "Case-insensitive partial-match search across project_id, project_name, "
+            "highway_number, state, contractor, and project_type. Performed in SQL "
+            "(SQLite), never client-side. Whitespace-only or omitted values are "
+            "equivalent to no search."
+        ),
+    ),
     state: str | None = Query(None),
     project_type: str | None = Query(None),
     project_status: str | None = Query(None, description="Filters on each project's latest snapshot status."),
@@ -65,6 +116,9 @@ def list_projects(
         status_subq, Project.project_id == status_subq.c.project_id
     )
 
+    q_clean = q.strip() if q else ""
+    if q_clean:
+        base = base.where(_search_filter(q_clean))
     if state is not None:
         base = base.where(Project.state == state)
     if project_type is not None:

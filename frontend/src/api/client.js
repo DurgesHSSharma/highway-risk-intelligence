@@ -83,3 +83,42 @@ async function request(path, { method = 'GET', params, body, signal } = {}) {
 
 export const apiGet = (path, params, signal) => request(path, { method: 'GET', params, signal })
 export const apiPost = (path, body, params, signal) => request(path, { method: 'POST', params, body, signal })
+
+// Phase 13: for binary (non-JSON) responses such as the PDF report endpoint.
+// Mirrors `request()`'s error handling (backend error bodies are still
+// JSON even for a binary-response endpoint -- see
+// backend/app/routers/reports.py) but resolves the success path to a Blob
+// + the server-suggested filename instead of parsed JSON.
+export async function apiGetBlob(path, params, signal) {
+  let response
+  try {
+    response = await fetch(buildUrl(path, params), { signal })
+  } catch (err) {
+    if (err.name === 'AbortError') throw err
+    throw new ApiError(
+      'Unable to reach the HRI backend. Confirm the FastAPI server is running at ' + API_BASE_URL + '.',
+      { status: 0 }
+    )
+  }
+
+  if (!response.ok) {
+    const text = await response.text()
+    let payload = null
+    if (text) {
+      try {
+        payload = JSON.parse(text)
+      } catch {
+        payload = null
+      }
+    }
+    const detail = payload && typeof payload === 'object' && 'detail' in payload ? payload.detail : payload
+    const message = extractMessage(detail) || `Request failed with status ${response.status}.`
+    throw new ApiError(message, { status: response.status, detail })
+  }
+
+  const blob = await response.blob()
+  const disposition = response.headers.get('Content-Disposition') || ''
+  const match = /filename="?([^"]+)"?/.exec(disposition)
+  const filename = match ? match[1] : 'report.pdf'
+  return { blob, filename }
+}

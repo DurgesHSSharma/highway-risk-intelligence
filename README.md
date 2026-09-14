@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 12 complete (professional React/Vite frontend dashboard integrated with the full Phase 1-11 backend)
+## Status: Phase 13 complete (real backend project search, genuine PDF reports, production hardening)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -114,6 +114,16 @@ LLM was evaluated and **not enabled** — measured free RAM (~1-1.8 GB of
 [docs/RAG_SYSTEM.md](docs/RAG_SYSTEM.md) section 19. **No contradiction
 detection, what-if simulator, decision-support synthesis, or dashboard/
 frontend integration is implemented yet.**
+
+Phase 13 adds real server-side project search (`GET /projects?q=...`,
+performed in SQL, replacing the Phase 12 frontend's client-side search over
+a pre-fetched full project list), genuine backend-generated PDF reports
+(`GET /projects/{id}/report.pdf`, built with ReportLab from the same
+`run_risk_summary` data/service the on-screen Reports/AI Risk Summary pages
+already use -- no second prediction/SHAP/RAG pipeline), and a focused
+production-hardening pass. See [docs/PHASE_13.md](docs/PHASE_13.md) for the
+full contract, a real bug found and fixed along the way, and known
+limitations.
 
 ## Prerequisites
 
@@ -347,6 +357,39 @@ npm run dev
 ```
 
 Then open `http://127.0.0.1:5173`.
+
+## Project search and PDF reports (Phase 13)
+
+Search is a real backend query parameter -- no separate script to run.
+Start the API and frontend as in Phase 12, then:
+
+```
+GET /projects?q=<text>&page=1&page_size=20
+```
+
+Try it, e.g. `GET /projects?q=kerala` or from the Projects page's search
+box (debounced, sent to the backend on every change). Download a real PDF
+report from the Reports page's "Download PDF Report" button, or directly:
+
+```
+GET /projects/HRI-0006/report.pdf?reporting_month=2022-12
+```
+
+See [docs/PHASE_13.md](docs/PHASE_13.md) for the full `q` contract, PDF
+contents, terminal-snapshot behavior, and hardening changes.
+
+Run the full test suite (from the repo root, includes Phase 13's new
+search and PDF tests):
+
+```
+./backend/.venv/Scripts/python.exe -m pytest -v
+./backend/.venv/Scripts/python.exe -m pytest backend -v
+```
+
+```bash
+cd frontend
+npm run test
+```
 
 ## Project layout
 

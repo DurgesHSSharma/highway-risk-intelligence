@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useApi } from '../hooks/useApi'
 import { useProjectSnapshots } from '../hooks/useProjectSnapshots'
-import { getProject, getRiskSummary } from '../api/endpoints'
+import { downloadReportPdf, getProject, getRiskSummary } from '../api/endpoints'
 import { latestSnapshot } from '../utils/snapshots'
 import AsyncSection, { EmptyState } from '../components/StateViews'
 import ProjectPicker from '../components/ProjectPicker'
@@ -11,7 +11,7 @@ import DisclaimerBox from '../components/DisclaimerBox'
 import RiskBadge from '../components/RiskBadge'
 import { ProbabilityTile, RegressionTile } from '../components/PredictionTiles'
 import { formatDate, formatMonthLabel, formatNumber } from '../utils/format'
-import { IconPrint } from '../components/icons'
+import { IconDownload, IconPrint } from '../components/icons'
 
 export default function Reports() {
   const { projectId } = useParams()
@@ -32,6 +32,7 @@ function ProjectReport({ projectId }) {
   const project = useApi((signal) => getProject(projectId, signal), [projectId])
   const snapshots = useProjectSnapshots(projectId)
   const [selectedMonth, setSelectedMonth] = useState(searchParams.get('month'))
+  const [pdfState, setPdfState] = useState({ status: 'idle', error: null })
 
   useEffect(() => {
     if (!selectedMonth && snapshots.data && snapshots.data.length > 0) {
@@ -41,6 +42,7 @@ function ProjectReport({ projectId }) {
 
   function handleMonthChange(month) {
     setSelectedMonth(month)
+    setPdfState({ status: 'idle', error: null })
     const next = new URLSearchParams(searchParams)
     next.set('month', month)
     setSearchParams(next, { replace: true })
@@ -52,6 +54,25 @@ function ProjectReport({ projectId }) {
     { skip: !selectedMonth }
   )
 
+  async function handleDownloadPdf() {
+    if (!selectedMonth || pdfState.status === 'loading') return
+    setPdfState({ status: 'loading', error: null })
+    try {
+      const { blob, filename } = await downloadReportPdf(projectId, selectedMonth)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+      setPdfState({ status: 'success', error: null })
+    } catch (err) {
+      setPdfState({ status: 'error', error: err })
+    }
+  }
+
   if (project.status === 'error' && project.error?.status === 404) {
     return <EmptyState title={`Project "${projectId}" was not found.`} message="Check the project ID and try again." />
   }
@@ -61,17 +82,33 @@ function ProjectReport({ projectId }) {
       <div className="page-header no-print">
         <div>
           <h1>Report</h1>
-          <p>A print-friendly risk summary report for a single project and reporting month.</p>
+          <p>A print-friendly risk summary report for a single project and reporting month, with a genuine backend-generated PDF download.</p>
         </div>
         <div className="page-header-actions">
           {snapshots.data && (
             <MonthSelect snapshots={snapshots.data} value={selectedMonth} onChange={handleMonthChange} id="report-month" />
           )}
-          <button type="button" className="btn btn-primary" onClick={() => window.print()}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleDownloadPdf}
+            disabled={!selectedMonth || pdfState.status === 'loading'}
+          >
+            <IconDownload size={15} /> {pdfState.status === 'loading' ? 'Generating PDF…' : 'Download PDF Report'}
+          </button>
+          <button type="button" className="btn" onClick={() => window.print()}>
             <IconPrint size={15} /> Print
           </button>
         </div>
       </div>
+
+      {pdfState.status === 'error' && (
+        <div className="no-print">
+          <DisclaimerBox warn>
+            Unable to generate the PDF report: {pdfState.error?.message || 'An unexpected error occurred.'}
+          </DisclaimerBox>
+        </div>
+      )}
 
       <AsyncSection
         status={project.status}

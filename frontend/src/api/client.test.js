@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, apiGet, apiPost } from './client'
+import { ApiError, apiGet, apiGetBlob, apiPost } from './client'
 
 function mockFetchOnce({ ok, status, body }) {
   global.fetch = vi.fn().mockResolvedValue({
@@ -72,5 +72,61 @@ describe('api client', () => {
   it('raises a network-failure ApiError when fetch itself rejects', async () => {
     global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
     await expect(apiGet('/health')).rejects.toMatchObject({ name: 'ApiError', status: 0 })
+  })
+})
+
+describe('apiGetBlob (Phase 13 PDF report download)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('resolves to a blob and the server-suggested filename on success', async () => {
+    const fakeBlob = new Blob(['%PDF-1.4 fake'], { type: 'application/pdf' })
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers([['Content-Disposition', 'attachment; filename="HRI-0006_2022-12_HRI_report.pdf"']]),
+      blob: async () => fakeBlob,
+    })
+
+    const result = await apiGetBlob('/projects/HRI-0006/report.pdf', { reporting_month: '2022-12' })
+    expect(result.blob).toBe(fakeBlob)
+    expect(result.filename).toBe('HRI-0006_2022-12_HRI_report.pdf')
+  })
+
+  it('falls back to a default filename when no Content-Disposition header is present', async () => {
+    const fakeBlob = new Blob(['%PDF-1.4 fake'], { type: 'application/pdf' })
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      blob: async () => fakeBlob,
+    })
+
+    const result = await apiGetBlob('/projects/HRI-0006/report.pdf', { reporting_month: '2022-12' })
+    expect(result.filename).toBe('report.pdf')
+  })
+
+  it('raises an ApiError with the parsed JSON detail on a non-2xx response', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      headers: new Headers(),
+      text: async () => JSON.stringify({ detail: "Project 'HRI-9999' not found." }),
+    })
+
+    await expect(apiGetBlob('/projects/HRI-9999/report.pdf', { reporting_month: '2022-12' })).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 404,
+      message: "Project 'HRI-9999' not found.",
+    })
+  })
+
+  it('raises a network-failure ApiError when fetch itself rejects', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
+    await expect(apiGetBlob('/projects/HRI-0006/report.pdf', { reporting_month: '2022-12' })).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 0,
+    })
   })
 })

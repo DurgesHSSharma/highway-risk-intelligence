@@ -1,10 +1,15 @@
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import Projects from './Projects'
 import { ProjectsCacheProvider } from '../context/ProjectsCacheContext'
 import { listProjects } from '../api/endpoints'
 
+// Phase 13: Projects search moved from a client-side filter over a
+// pre-fetched full project list to real backend search (GET /projects?q=).
+// These tests assert that the page sends `q`/filters/pagination to the
+// backend rather than filtering an in-memory list -- see
+// backend/tests/test_projects_api.py for the real SQL-level search tests.
 vi.mock('../api/endpoints', () => ({
   listProjects: vi.fn(),
 }))
@@ -25,10 +30,20 @@ function renderProjects() {
   )
 }
 
-describe('Projects page', () => {
-  it('renders every project from the backend in the table', async () => {
-    listProjects.mockResolvedValue({ items: PROJECTS, page: 1, page_size: 100, total: PROJECTS.length })
+function tableCalls() {
+  // Distinguishes this page's own request (page_size from PAGE_SIZE_OPTIONS,
+  // default 20) from ProjectsCacheContext's unrelated hydration call
+  // (fixed page_size 100, used only for filter-dropdown option lists).
+  return listProjects.mock.calls.filter(([params]) => params.page_size !== 100)
+}
 
+beforeEach(() => {
+  listProjects.mockReset()
+  listProjects.mockResolvedValue({ items: PROJECTS, page: 1, page_size: 20, total: PROJECTS.length })
+})
+
+describe('Projects page', () => {
+  it('renders every project the backend returns for the current page', async () => {
     renderProjects()
 
     expect(await screen.findByText('HRI-0006')).toBeInTheDocument()
@@ -36,28 +51,97 @@ describe('Projects page', () => {
     expect(screen.getByText('HRI-0023')).toBeInTheDocument()
   })
 
-  it('filters rows client-side by project ID/name search text', async () => {
-    listProjects.mockResolvedValue({ items: PROJECTS, page: 1, page_size: 100, total: PROJECTS.length })
+  it('sends the initial listing request with no search query (backward compatible)', async () => {
+    renderProjects()
+    await screen.findByText('HRI-0006')
 
+    const calls = tableCalls()
+    expect(calls.length).toBeGreaterThan(0)
+    expect(calls[0][0]).toMatchObject({ page: 1, page_size: 20, q: '', state: '', project_type: '', project_status: '' })
+  })
+
+  it('debounces search input and sends q to the real backend, never filtering a pre-fetched list', async () => {
+    renderProjects()
+    await screen.findByText('HRI-0006')
+    listProjects.mockClear()
+
+    fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'Bangalore' } })
+
+    // Debounced: not sent on the very next tick.
+    expect(tableCalls().length).toBe(0)
+
+    await waitFor(
+      () => {
+        const calls = tableCalls()
+        expect(calls.some(([params]) => params.q === 'Bangalore')).toBe(true)
+      },
+      { timeout: 1000 }
+    )
+  })
+
+  it('clears the search and re-requests the unfiltered listing', async () => {
     renderProjects()
     await screen.findByText('HRI-0006')
 
     fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'Bangalore' } })
+    await waitFor(() => expect(tableCalls().some(([p]) => p.q === 'Bangalore')).toBe(true), { timeout: 1000 })
 
-    const table = screen.getByRole('table')
-    expect(within(table).getByText('HRI-0019')).toBeInTheDocument()
-    expect(within(table).queryByText('HRI-0006')).not.toBeInTheDocument()
-    expect(within(table).queryByText('HRI-0023')).not.toBeInTheDocument()
+    listProjects.mockClear()
+    fireEvent.click(screen.getByLabelText('Clear search'))
+
+    expect(screen.getByLabelText('Search')).toHaveValue('')
+    await waitFor(() => expect(tableCalls().some(([p]) => p.q === '')).toBe(true), { timeout: 1000 })
   })
 
-  it('shows an empty state when no project matches the filters', async () => {
-    listProjects.mockResolvedValue({ items: PROJECTS, page: 1, page_size: 100, total: PROJECTS.length })
-
+  it('resets to page 1 when the search query changes after paging forward', async () => {
+    listProjects.mockResolvedValue({ items: PROJECTS, page: 1, page_size: 20, total: 45 })
     renderProjects()
     await screen.findByText('HRI-0006')
 
-    fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'no-such-project-xyz' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    await waitFor(() => expect(tableCalls().some(([p]) => p.page === 2)).toBe(true))
 
-    expect(await screen.findByText('No projects match your filters.')).toBeInTheDocument()
+    listProjects.mockClear()
+    fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'Expressway' } })
+
+    await waitFor(
+      () => {
+        const call = tableCalls().find(([p]) => p.q === 'Expressway')
+        expect(call).toBeTruthy()
+        expect(call[0].page).toBe(1)
+      },
+      { timeout: 1000 }
+    )
+  })
+
+  it('combines search with state/type/status filters in one request', async () => {
+    renderProjects()
+    await screen.findByText('HRI-0006')
+    listProjects.mockClear()
+
+    fireEvent.change(screen.getByLabelText('State'), { target: { value: 'Karnataka' } })
+    fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'Bangalore' } })
+
+    await waitFor(() => {
+      const call = tableCalls().find(([p]) => p.q === 'Bangalore')
+      expect(call).toBeTruthy()
+      expect(call[0].state).toBe('Karnataka')
+    }, { timeout: 1000 })
+  })
+
+  it('shows an empty state when the backend returns no results for the search', async () => {
+    listProjects.mockResolvedValue({ items: [], page: 1, page_size: 20, total: 0 })
+
+    renderProjects()
+
+    expect(await screen.findByText('No projects match your search or filters.')).toBeInTheDocument()
+  })
+
+  it('shows an error state when the backend request fails', async () => {
+    listProjects.mockRejectedValue(new Error('Unable to reach the HRI backend.'))
+
+    renderProjects()
+
+    expect(await screen.findByText('Unable to load project data.')).toBeInTheDocument()
   })
 })
