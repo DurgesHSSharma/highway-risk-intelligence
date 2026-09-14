@@ -1,0 +1,20 @@
+{
+  "description": "Phase 9 seeded synthetic fixture -- proves the contradiction detection mechanism works end-to-end. These two fake passages are NOT part of the real document corpus, NOT included in real-corpus statistics, NOT indexed in rag_index/, and NOT written to data/processed/document_chunks.csv. Used only by tests/backend tests that construct in-memory Claim objects directly from this text.",
+  "chunk_a": {
+    "chunk_id": "SYN-001_p0001_c00",
+    "document_id": "SYN-001",
+    "page_number": 1,
+    "text": "Test Highway Project X had a reported cost overrun of 12% as assessed by the state audit team."
+  },
+  "chunk_b": {
+    "chunk_id": "SYN-002_p0001_c00",
+    "document_id": "SYN-002",
+    "page_number": 1,
+    "text": "Test Highway Project X had a reported cost overrun of 27% according to the central monitoring agency."
+  },
+  "expected_claim_type": "percentage",
+  "expected_normalized_value_a": 12.0,
+  "expected_normalized_value_b": 27.0,
+  "expected_absolute_difference": 15.0,
+  "expected_outcome_status": "flagged"
+}

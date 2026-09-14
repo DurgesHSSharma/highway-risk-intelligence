@@ -21,6 +21,7 @@ import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.config import REPO_ROOT, settings  # noqa: E402
+from app.contradiction.detector import get_detection_summary  # noqa: E402
 from app.db.loader import load_database  # noqa: E402
 from app.main import app  # noqa: E402
 from app.ml.registry import load_models  # noqa: E402
@@ -51,6 +52,15 @@ def _phase8_rag_index():
     resource-conscious, never reloaded per test). Uses the real committed
     rag_index/ built from the real document corpus -- never a fake index."""
     yield get_retrieval_service()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _phase9_contradiction_summary():
+    """Runs the Phase 9 detector against the real committed corpus exactly
+    once for the whole test session (same rationale as the fixtures above:
+    it's cheap -- pure regex + numpy over already-loaded Phase 8 artifacts
+    -- but still never recomputed per test)."""
+    yield get_detection_summary()
 
 
 @pytest.fixture(scope="session")

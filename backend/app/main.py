@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.contradiction.detector import get_detection_summary
 from app.db.base import create_all
 from app.ml.registry import load_models
 from app.rag.retrieval import get_retrieval_service
@@ -23,6 +24,10 @@ async def lifespan(app: FastAPI):
     # app/rag/retrieval.py). Fails loudly if the index hasn't been built yet
     # (run `python -m scripts.build_rag_index` first).
     get_retrieval_service()
+    # Phase 9: runs the contradiction/inconsistency detector once (reusing
+    # the Phase 8 index/embeddings just loaded above, never recomputing
+    # them) and caches the result -- never rebuilt per request.
+    get_detection_summary()
     yield
 
 
