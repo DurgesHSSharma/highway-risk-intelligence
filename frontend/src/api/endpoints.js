@@ -45,6 +45,16 @@ export const runSimulation = (projectId, reportingMonth, overrides, signal) =>
 export const getRiskSummary = (projectId, reportingMonth, signal) =>
   apiGet(`/projects/${encodeURIComponent(projectId)}/risk-summary`, { reporting_month: reportingMonth }, signal)
 
+/**
+ * GET /projects/{project_id}/decision-intelligence?reporting_month=YYYY-MM
+ * (Phase 15) -- composes the Phase 11 risk-summary response above with
+ * Phase 14 portfolio context (risk_positioning, peer_context,
+ * driver_alignment) and a merged recommended_reviews list. See
+ * backend/app/routers/decision_intelligence.py.
+ */
+export const getDecisionIntelligence = (projectId, reportingMonth, signal) =>
+  apiGet(`/projects/${encodeURIComponent(projectId)}/decision-intelligence`, { reporting_month: reportingMonth }, signal)
+
 /** GET /documents/search?q=...&top_k=5 */
 export const searchDocuments = (query, topK, signal) => apiGet('/documents/search', { q: query, top_k: topK }, signal)
 

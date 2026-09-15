@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 14 complete (portfolio-level analytics with historical/predicted separation)
+## Status: Phase 15 complete (Decision Intelligence — Phase 11 + Phase 14 composition)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -418,6 +418,36 @@ Or visit the extended Analytics page in the frontend. See
 [docs/ADVANCED_ANALYTICS.md](docs/ADVANCED_ANALYTICS.md) for the full
 architecture, risk-score formula, minimum-sample rules, and real measured
 example numbers.
+
+## Decision Intelligence (Phase 15)
+
+Composes Phase 11's project-level `GET /risk-summary` (live prediction,
+live per-instance SHAP, grounded RAG evidence, potential inconsistencies,
+illustrative what-if scenario) with Phase 14's portfolio context
+(composite risk score/percentile/portfolio-relative risk band, state/
+project-type/contractor peer comparison, portfolio-wide SHAP drivers) for
+one selected project — answering not just "what will happen to this
+project and why", but also "how does it compare to the rest of the
+portfolio, and to its peers". Reuses both phases' services directly as
+black boxes; never re-implements their prediction/SHAP/RAG/contradiction/
+scenario/risk-scoring/segmentation logic, and never triggers Phase 14
+batch scoring on a request.
+
+Start the API and frontend as in Phase 12-14 (the Phase 14 prediction
+cache must already exist — see above), then:
+
+```
+GET /projects/HRI-0006/decision-intelligence?reporting_month=2022-12
+```
+
+Or visit `/projects/:projectId/decision-intelligence` in the frontend
+(also reachable from the sidebar's "Decision Intelligence" entry, or the
+"Risk Summary"/"Decision Intelligence" cross-links on either page). See
+[docs/DECISION_INTELLIGENCE.md](docs/DECISION_INTELLIGENCE.md) for the
+full architecture, the exact portfolio-percentile definition, peer-group
+methodology, the real-data-derived peer-elevated-risk threshold, and real
+example responses (including a non-terminal, a terminal, and a CRITICAL
+-risk project).
 
 ## Project layout
 

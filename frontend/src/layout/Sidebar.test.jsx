@@ -19,6 +19,7 @@ describe('Sidebar navigation', () => {
       ['Dashboard', '/'],
       ['Projects', '/projects'],
       ['AI Risk Summary', '/risk-summary'],
+      ['Decision Intelligence', '/decision-intelligence'],
       ['What-if Simulator', '/simulator'],
       ['Document Search', '/documents'],
       ['Inconsistencies', '/inconsistencies'],

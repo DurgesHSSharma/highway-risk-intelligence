@@ -11,6 +11,7 @@ from app.ml.training_ranges import load_training_ranges
 from app.rag.retrieval import get_retrieval_service
 from app.routers import (
     analytics,
+    decision_intelligence,
     decision_support,
     documents,
     portfolio_analytics,
@@ -64,6 +65,7 @@ app.include_router(decision_support.router)
 app.include_router(analytics.router)
 app.include_router(portfolio_analytics.router)
 app.include_router(reports.router)
+app.include_router(decision_intelligence.router)
 
 
 @app.get("/")

@@ -445,6 +445,24 @@ img {
   border-color: var(--blue-100);
 }
 
+/* Like .badge-neutral, but for a full sentence rather than a short pill
+   label -- .badge's white-space: nowrap overflows narrow viewports for
+   longer text (e.g. the Decision Intelligence "not a meaningful
+   comparison" note), so this wraps normally instead. */
+.not-comparable-note {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 650;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  white-space: normal;
+}
+
 .badge-dot {
   width: 6px;
   height: 6px;

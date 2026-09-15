@@ -3,6 +3,7 @@ import Logo from '../components/Logo'
 import {
   IconAnalytics,
   IconDashboard,
+  IconEye,
   IconInconsistency,
   IconProjects,
   IconReports,
@@ -11,19 +12,28 @@ import {
   IconSimulator,
 } from '../components/icons'
 
-// /projects/:id/risk-summary and /projects/:id/simulator share the
-// "/projects" prefix with the plain Projects section, so NavLink's default
-// prefix matching would highlight "Projects" for those nested routes too.
-// Each item gets an explicit isActive test instead.
+// /projects/:id/risk-summary, /projects/:id/decision-intelligence, and
+// /projects/:id/simulator all share the "/projects" prefix with the plain
+// Projects section, so NavLink's default prefix matching would highlight
+// "Projects" for those nested routes too. Each item gets an explicit
+// isActive test instead.
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: IconDashboard, isActive: (p) => p === '/' },
   {
     to: '/projects',
     label: 'Projects',
     icon: IconProjects,
-    isActive: (p) => p === '/projects' || (p.startsWith('/projects/') && !p.includes('/risk-summary') && !p.includes('/simulator')),
+    isActive: (p) =>
+      p === '/projects' ||
+      (p.startsWith('/projects/') && !p.includes('/risk-summary') && !p.includes('/simulator') && !p.includes('/decision-intelligence')),
   },
   { to: '/risk-summary', label: 'AI Risk Summary', icon: IconRisk, isActive: (p) => p.includes('risk-summary') },
+  {
+    to: '/decision-intelligence',
+    label: 'Decision Intelligence',
+    icon: IconEye,
+    isActive: (p) => p.includes('decision-intelligence'),
+  },
   { to: '/simulator', label: 'What-if Simulator', icon: IconSimulator, isActive: (p) => p.includes('simulator') },
   { to: '/documents', label: 'Document Search', icon: IconSearch, isActive: (p) => p === '/documents' },
   { to: '/inconsistencies', label: 'Inconsistencies', icon: IconInconsistency, isActive: (p) => p === '/inconsistencies' },

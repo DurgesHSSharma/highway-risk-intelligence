@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Projects = lazy(() => import('./pages/Projects'))
 const ProjectDetails = lazy(() => import('./pages/ProjectDetails'))
 const RiskSummary = lazy(() => import('./pages/RiskSummary'))
+const DecisionIntelligence = lazy(() => import('./pages/DecisionIntelligence'))
 const Simulator = lazy(() => import('./pages/Simulator'))
 const DocumentSearch = lazy(() => import('./pages/DocumentSearch'))
 const Inconsistencies = lazy(() => import('./pages/Inconsistencies'))
@@ -30,6 +31,8 @@ export default function App() {
               <Route path="projects/:projectId" element={<ProjectDetails />} />
               <Route path="risk-summary" element={<RiskSummary />} />
               <Route path="projects/:projectId/risk-summary" element={<RiskSummary />} />
+              <Route path="decision-intelligence" element={<DecisionIntelligence />} />
+              <Route path="projects/:projectId/decision-intelligence" element={<DecisionIntelligence />} />
               <Route path="simulator" element={<Simulator />} />
               <Route path="projects/:projectId/simulator" element={<Simulator />} />
               <Route path="documents" element={<DocumentSearch />} />
