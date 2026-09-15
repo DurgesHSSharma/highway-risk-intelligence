@@ -37,6 +37,15 @@
   --risk-low-bg: #ecfdf3;
   --risk-low-border: #6ce9a6;
 
+  /* Phase 14: composite risk score has a 4th level (CRITICAL) above
+     "high" -- given a distinct hue (purple) rather than a darker red so it
+     stays visually distinguishable at a glance, not just a shade of the
+     existing high-risk red. */
+  --risk-critical: #6941c6;
+  --risk-critical-fg: #6941c6;
+  --risk-critical-bg: #f4f3ff;
+  --risk-critical-border: #d6bbfb;
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;

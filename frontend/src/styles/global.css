@@ -429,6 +429,11 @@ img {
   color: var(--risk-low-fg);
   border-color: var(--risk-low-border);
 }
+.badge-critical {
+  background: var(--risk-critical-bg);
+  color: var(--risk-critical-fg);
+  border-color: var(--risk-critical-border);
+}
 .badge-neutral {
   background: var(--surface-muted);
   color: var(--text-secondary);
@@ -927,6 +932,70 @@ img {
 
 .print-only {
   display: none;
+}
+
+/* ---------- Phase 14: portfolio analytics ---------- */
+
+.chart-tooltip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  padding: 8px 10px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.chart-tooltip strong {
+  color: var(--text-primary);
+}
+
+.small-sample-tag {
+  font-size: 10.5px;
+  font-weight: 650;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+.dimension-tabs {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+}
+.dimension-tab {
+  border: none;
+  background: transparent;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.dimension-tab.active {
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.insight-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.insight-list li::marker {
+  color: var(--blue-600);
 }
 
 /* ---------- Responsive ---------- */

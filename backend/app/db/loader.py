@@ -23,7 +23,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.db.base import create_all, engine as default_engine
-from app.db.models import Project, ProjectSnapshot
+from app.db.models import Project, ProjectSnapshot, PortfolioPredictionCache
 
 # Columns that are constant per project_id -- see app/db/models.py docstring
 # for the inspection this is based on and the two deliberate deviations
@@ -223,6 +223,15 @@ def load_database(
 
     session = Session(bind=bind)
     try:
+        # Phase 14 added `portfolio_prediction_cache`, FK'd to
+        # `projects.project_id` with FK enforcement ON (see app/db/base.py).
+        # It must be cleared before `projects` on every reload, exactly like
+        # `project_snapshots` below -- it is fully derived, reproducible
+        # data (scripts/batch_score_portfolio.py), never hand-authored, so
+        # clearing it here is consistent with this function's existing
+        # clear-and-reload philosophy. Callers are expected to re-run batch
+        # scoring after reloading the database.
+        session.execute(delete(PortfolioPredictionCache))
         session.execute(delete(ProjectSnapshot))
         session.execute(delete(Project))
         session.flush()

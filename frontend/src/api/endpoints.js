@@ -55,6 +55,31 @@ export const getInconsistencies = (signal) => apiGet('/documents/inconsistencies
 export const getPortfolioSummary = (signal) => apiGet('/analytics/summary', undefined, signal)
 
 /**
+ * GET /analytics/portfolio (Phase 14) -- historical + predicted overview,
+ * risk distribution, top risks preview, executive insights. See
+ * backend/app/routers/portfolio_analytics.py.
+ */
+export const getPortfolioOverview = (signal) => apiGet('/analytics/portfolio', undefined, signal)
+
+/**
+ * GET /analytics/risk-projects (Phase 14) -- ranked, filterable predicted
+ * risk list. Backs both the Top-Risk table and the Risk Matrix.
+ * @param {{state?: string, project_type?: string, contractor?: string, risk_level?: string, limit?: number, offset?: number}} params
+ */
+export const getRiskProjects = (params, signal) => apiGet('/analytics/risk-projects', params, signal)
+
+/**
+ * GET /analytics/segments?dimension=state|project_type|contractor (Phase 14)
+ */
+export const getPortfolioSegments = (dimension, signal) => apiGet('/analytics/segments', { dimension }, signal)
+
+/** GET /analytics/drivers (Phase 14) -- portfolio-wide model-attributed SHAP drivers. */
+export const getPortfolioDrivers = (signal) => apiGet('/analytics/drivers', undefined, signal)
+
+/** GET /analytics/trends (Phase 14) -- historical (actual) + predicted (model) trends. */
+export const getPortfolioTrends = (signal) => apiGet('/analytics/trends', undefined, signal)
+
+/**
  * GET /projects/{project_id}/report.pdf?reporting_month=YYYY-MM (Phase 13)
  * Resolves to `{blob, filename}` for a genuine backend-generated PDF (see
  * backend/app/routers/reports.py) -- never a client-side/print-based export.

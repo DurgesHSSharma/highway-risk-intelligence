@@ -32,6 +32,7 @@ from __future__ import annotations
 from sqlalchemy import (
     Boolean,
     Date,
+    DateTime,
     Float,
     ForeignKey,
     Integer,
@@ -115,3 +116,50 @@ class ProjectSnapshot(Base):
     cost_overrun: Mapped[int] = mapped_column(Integer, nullable=False)
 
     project: Mapped["Project"] = relationship(back_populates="snapshots")
+
+
+class PortfolioPredictionCache(Base):
+    """Phase 14 batch-scoring cache: ONE row per project, holding the four
+    Phase 6 `TASK_MODEL_REGISTRY` predictions computed from that project's
+    latest ELIGIBLE snapshot -- i.e. its most recent snapshot with
+    `is_terminal_snapshot=False` (see scripts/batch_score_portfolio.py).
+
+    This table exists so `/analytics/*` endpoints never run per-project live
+    ML inference on a dashboard request (see docs/ADVANCED_ANALYTICS.md
+    "Batch scoring architecture"). It is populated exclusively by
+    `app.analytics.batch_scoring.run_batch_scoring`, using a deterministic
+    clear-and-reload strategy identical in spirit to
+    `app/db/loader.py::load_database` -- never upserted row-by-row.
+
+    Every synthetic-dataset project in this corpus is simulated through to
+    completion, so "latest snapshot" for every project is always terminal
+    (`Completed`) -- there is no project whose CURRENT real-world status
+    would be "still ongoing". "Current predicted risk" is therefore defined,
+    consistently across this project, as: the model prediction from each
+    project's own latest pre-completion (non-terminal) reporting month --
+    not a live "as of today" snapshot. This is a disclosed, inspected
+    characteristic of the synthetic data (see Phase 6/14 docs), not a bug.
+    """
+
+    __tablename__ = "portfolio_prediction_cache"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    project_id: Mapped[str] = mapped_column(
+        String, ForeignKey("projects.project_id"), nullable=False, unique=True, index=True
+    )
+    reporting_month: Mapped[str] = mapped_column(String(7), nullable=False, index=True)
+    computed_at: Mapped[str] = mapped_column(DateTime, nullable=False, index=True)
+
+    significant_delay_model: Mapped[str] = mapped_column(String, nullable=False)
+    significant_delay_predicted_class: Mapped[int] = mapped_column(Integer, nullable=False)
+    significant_delay_probability: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    final_delay_days_model: Mapped[str] = mapped_column(String, nullable=False)
+    final_delay_days_predicted: Mapped[float] = mapped_column(Float, nullable=False)
+
+    cost_overrun_model: Mapped[str] = mapped_column(String, nullable=False)
+    cost_overrun_predicted_class: Mapped[int] = mapped_column(Integer, nullable=False)
+    cost_overrun_probability: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    final_cost_overrun_pct_model: Mapped[str] = mapped_column(String, nullable=False)
+    final_cost_overrun_pct_predicted: Mapped[float] = mapped_column(Float, nullable=False)

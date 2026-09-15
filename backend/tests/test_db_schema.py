@@ -69,6 +69,15 @@ def test_loader_is_idempotent(_phase6_test_database):
     assert count_duplicate_project_months() == 0
     assert count_orphan_snapshots() == 0
 
+    # Phase 14: load_database() now also clears `portfolio_prediction_cache`
+    # before `projects` (FK-safety fix, see app/db/loader.py) -- this is the
+    # only test in the suite that reloads the database mid-session, so it
+    # must restore the cache afterward for later Phase 14 tests that expect
+    # it populated (session-scoped fixture, populated once at session start).
+    from app.analytics.batch_scoring import run_batch_scoring
+
+    run_batch_scoring()
+
 
 def test_loader_reconciles_with_source_csv(_phase6_test_database):
     summary = _phase6_test_database

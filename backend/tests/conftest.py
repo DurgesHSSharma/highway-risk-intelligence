@@ -51,6 +51,18 @@ def _phase6_test_database():
 
 
 @pytest.fixture(scope="session", autouse=True)
+def _phase14_batch_scoring(_phase6_test_database):
+    """Populates `portfolio_prediction_cache` for the test database exactly
+    once per test session, using the real batch-scoring code path (never a
+    fabricated fixture) -- so Phase 14 analytics endpoint tests exercise
+    the real cache-read behavior. Depends on `_phase6_test_database` so it
+    always runs after the DB/models are loaded."""
+    from app.analytics.batch_scoring import run_batch_scoring
+
+    yield run_batch_scoring()
+
+
+@pytest.fixture(scope="session", autouse=True)
 def _phase8_rag_index():
     """Loads the real Phase 8 FAISS index + embedding model exactly once for
     the whole test session (same rationale as `_phase6_test_database` above:

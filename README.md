@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 13 complete (real backend project search, genuine PDF reports, production hardening)
+## Status: Phase 14 complete (portfolio-level analytics with historical/predicted separation)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -390,6 +390,34 @@ search and PDF tests):
 cd frontend
 npm run test
 ```
+
+## Portfolio-level analytics (Phase 14)
+
+Portfolio-wide risk intelligence, always kept structurally separate into
+HISTORICAL / ACTUAL (recorded outcomes) and CURRENT MODEL-PREDICTED
+(model output from each project's latest non-terminal snapshot). Start the
+API and frontend as in Phase 12/13, then generate the prediction cache
+once (batch-scores all eligible projects; re-run after the dataset or
+model artifacts change):
+
+```
+./backend/.venv/Scripts/python.exe -m scripts.batch_score_portfolio
+```
+
+Then explore the new endpoints, e.g.:
+
+```
+GET /analytics/portfolio
+GET /analytics/risk-projects?risk_level=CRITICAL
+GET /analytics/segments?dimension=contractor
+GET /analytics/drivers
+GET /analytics/trends
+```
+
+Or visit the extended Analytics page in the frontend. See
+[docs/ADVANCED_ANALYTICS.md](docs/ADVANCED_ANALYTICS.md) for the full
+architecture, risk-score formula, minimum-sample rules, and real measured
+example numbers.
 
 ## Project layout
 

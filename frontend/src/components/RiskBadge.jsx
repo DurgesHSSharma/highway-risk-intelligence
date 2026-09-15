@@ -3,6 +3,7 @@
 // only signal.
 
 const LEVELS = {
+  critical: { className: 'badge-critical', label: 'Critical' },
   high: { className: 'badge-high', label: 'High' },
   medium: { className: 'badge-medium', label: 'Medium' },
   low: { className: 'badge-low', label: 'Low' },
