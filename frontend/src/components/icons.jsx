@@ -225,3 +225,39 @@ export function IconRoad(props) {
     </Svg>
   )
 }
+
+export function IconPlus(props) {
+  return (
+    <Svg {...props}>
+      <path d="M12 4.5v15M4.5 12h15" />
+    </Svg>
+  )
+}
+
+export function IconEdit(props) {
+  return (
+    <Svg {...props}>
+      <path d="M4 20h16" />
+      <path d="M15.5 4.5a2 2 0 0 1 2.8 2.8L8 17.6l-4 1 1-4z" />
+    </Svg>
+  )
+}
+
+export function IconArchive(props) {
+  return (
+    <Svg {...props}>
+      <rect x="3.5" y="4" width="17" height="4.5" rx="1.2" />
+      <path d="M5 8.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5" />
+      <path d="M10 13h4" />
+    </Svg>
+  )
+}
+
+export function IconChat(props) {
+  return (
+    <Svg {...props}>
+      <path d="M4 5.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H9l-4.5 4V16H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1z" />
+      <path d="M8 9.5h8M8 12.5h5" />
+    </Svg>
+  )
+}

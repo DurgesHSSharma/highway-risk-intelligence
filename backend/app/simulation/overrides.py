@@ -106,6 +106,8 @@ def apply_overrides(
     for field, new_value in overrides.items():
         original_value = _to_jsonable(field, baseline_row.iloc[0][field])
         coerced_new = float(new_value) if field in NUMERIC_PREDICTOR_COLUMNS else str(new_value)
+        if field in NUMERIC_PREDICTOR_COLUMNS and simulated_row[field].dtype != "float64":
+            simulated_row[field] = simulated_row[field].astype("float64")
         simulated_row.at[0, field] = coerced_new
 
         delta = (coerced_new - original_value) if (field in NUMERIC_PREDICTOR_COLUMNS and original_value is not None) else None

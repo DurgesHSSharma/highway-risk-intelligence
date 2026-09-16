@@ -19,6 +19,7 @@ from app.ml.features import FeatureConstructionError, build_predictor_row
 from app.ml.predict import predict_all_tasks
 from app.validation import MONTH_DESCRIPTION, MONTH_PATTERN
 from app.schemas.predictions import (
+    INSUFFICIENT_DATA_EXPLANATION,
     NON_TERMINAL_EXPLANATION,
     SYNTHETIC_DATA_DISCLAIMER_ACTUAL,
     SYNTHETIC_DATA_DISCLAIMER_MODEL,
@@ -72,7 +73,23 @@ def predict(
     try:
         X = build_predictor_row(db, project_id, reporting_month)
     except FeatureConstructionError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        # Phase 17B: an expected data-completeness state (typically a
+        # recently created project without enough monthly history yet), not
+        # a client error and not a fabricated prediction -- 200 with an
+        # explicit insufficient_data status, never a raw 422.
+        return PredictionResponse(
+            project_id=project_id,
+            reporting_month=reporting_month,
+            is_terminal_snapshot=False,
+            prediction_status="insufficient_data",
+            is_model_prediction=False,
+            explanation=f"{INSUFFICIENT_DATA_EXPLANATION} ({exc})",
+            synthetic_data_disclaimer=SYNTHETIC_DATA_DISCLAIMER_MODEL,
+            significant_delay=SignificantDelayResult(),
+            final_delay_days=FinalDelayDaysResult(),
+            cost_overrun=CostOverrunResult(),
+            final_cost_overrun_pct=FinalCostOverrunPctResult(),
+        )
 
     results = predict_all_tasks(X)
 

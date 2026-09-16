@@ -12,12 +12,14 @@ from app.ml.registry import load_models
 from app.ml.training_ranges import load_training_ranges
 from app.rag.retrieval import get_retrieval_service
 from app.routers import (
+    agent,
     analytics,
     decision_intelligence,
     decision_support,
     documents,
     portfolio_analytics,
     predictions,
+    project_lifecycle,
     projects,
     reports,
     simulation,
@@ -91,6 +93,7 @@ app.add_middleware(
 )
 
 app.include_router(projects.router)
+app.include_router(project_lifecycle.router)
 app.include_router(predictions.router)
 app.include_router(simulation.router)
 app.include_router(documents.router)
@@ -99,6 +102,7 @@ app.include_router(analytics.router)
 app.include_router(portfolio_analytics.router)
 app.include_router(reports.router)
 app.include_router(decision_intelligence.router)
+app.include_router(agent.router)
 
 
 @app.get("/")

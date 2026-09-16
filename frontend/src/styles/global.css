@@ -741,6 +741,39 @@ img {
   line-height: 1.55;
 }
 
+/* ---------- Ask HRI (Phase 17C) message thread ---------- */
+
+.ask-hri-thread {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.ask-hri-message {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.ask-hri-message-user {
+  align-self: flex-end;
+  background: var(--navy-800);
+  color: #fff;
+}
+
+.ask-hri-message-assistant {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 100%;
+}
+
 /* ---------- SHAP driver bars ---------- */
 
 .driver-row {

@@ -9,6 +9,7 @@ import { LoadingState } from './components/StateViews'
 // pays for it instead of every page bundling it into one chunk.
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Projects = lazy(() => import('./pages/Projects'))
+const ProjectForm = lazy(() => import('./pages/ProjectForm'))
 const ProjectDetails = lazy(() => import('./pages/ProjectDetails'))
 const RiskSummary = lazy(() => import('./pages/RiskSummary'))
 const DecisionIntelligence = lazy(() => import('./pages/DecisionIntelligence'))
@@ -17,6 +18,7 @@ const DocumentSearch = lazy(() => import('./pages/DocumentSearch'))
 const Inconsistencies = lazy(() => import('./pages/Inconsistencies'))
 const Analytics = lazy(() => import('./pages/Analytics'))
 const Reports = lazy(() => import('./pages/Reports'))
+const AskHRI = lazy(() => import('./pages/AskHRI'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 export default function App() {
@@ -28,6 +30,8 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="projects" element={<Projects />} />
+              <Route path="projects/new" element={<ProjectForm />} />
+              <Route path="projects/:projectId/edit" element={<ProjectForm />} />
               <Route path="projects/:projectId" element={<ProjectDetails />} />
               <Route path="risk-summary" element={<RiskSummary />} />
               <Route path="projects/:projectId/risk-summary" element={<RiskSummary />} />
@@ -40,6 +44,7 @@ export default function App() {
               <Route path="analytics" element={<Analytics />} />
               <Route path="reports" element={<Reports />} />
               <Route path="reports/:projectId" element={<Reports />} />
+              <Route path="ask" element={<AskHRI />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

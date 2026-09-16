@@ -1,16 +1,17 @@
 // One typed-by-JSDoc function per backend endpoint actually implemented in
 // backend/app/routers/*.py. Nothing here is speculative -- every path and
 // query/body param matches the FastAPI route signature it calls.
-import { apiGet, apiGetBlob, apiPost } from './client'
+import { apiGet, apiGetBlob, apiPatch, apiPost } from './client'
 
 export const getHealth = (signal) => apiGet('/health', undefined, signal)
 
 /**
  * GET /projects
- * @param {{page?: number, page_size?: number, q?: string, state?: string, project_type?: string, project_status?: string}} params
+ * @param {{page?: number, page_size?: number, q?: string, state?: string, project_type?: string, project_status?: string, is_archived?: boolean}} params
  * `q` (Phase 13) is a case-insensitive partial-match search performed in
  * SQL on the backend across project_id/project_name/highway_number/state/
- * contractor/project_type -- never a client-side filter.
+ * contractor/project_type -- never a client-side filter. `is_archived`
+ * (Phase 17B): omit to return both active and archived projects.
  */
 export const listProjects = (params, signal) => apiGet('/projects', params, signal)
 
@@ -96,3 +97,50 @@ export const getPortfolioTrends = (signal) => apiGet('/analytics/trends', undefi
  */
 export const downloadReportPdf = (projectId, reportingMonth, signal) =>
   apiGetBlob(`/projects/${encodeURIComponent(projectId)}/report.pdf`, { reporting_month: reportingMonth }, signal)
+
+/**
+ * POST /projects (Phase 17B) -- create a USER_ENTERED project. See
+ * backend/app/routers/project_lifecycle.py / schemas/project_lifecycle.py
+ * for the exact required/optional fields.
+ * @param {object} payload matches ProjectCreate
+ */
+export const createProject = (payload, signal) => apiPost('/projects', payload, undefined, signal)
+
+/**
+ * PATCH /projects/{project_id} (Phase 17B) -- partial edit of
+ * project-level (government/estimate) fields. Only fields present in
+ * `payload` are changed.
+ * @param {object} payload matches ProjectUpdate (all fields optional)
+ */
+export const updateProject = (projectId, payload, signal) =>
+  apiPatch(`/projects/${encodeURIComponent(projectId)}`, payload, undefined, signal)
+
+/** POST /projects/{project_id}/archive (Phase 17B) -- non-destructive. */
+export const archiveProject = (projectId, signal) =>
+  apiPost(`/projects/${encodeURIComponent(projectId)}/archive`, undefined, undefined, signal)
+
+/** POST /projects/{project_id}/reactivate (Phase 17B). */
+export const reactivateProject = (projectId, signal) =>
+  apiPost(`/projects/${encodeURIComponent(projectId)}/reactivate`, undefined, undefined, signal)
+
+/**
+ * POST /projects/{project_id}/snapshots (Phase 17B) -- one monthly
+ * progress update. Actual-outcome fields (final_delay_days,
+ * significant_delay, final_cost_overrun_pct, cost_overrun) are only
+ * accepted when `payload.project_status === "Completed"`.
+ * @param {object} payload matches SnapshotCreate
+ */
+export const addProjectSnapshot = (projectId, payload, signal) =>
+  apiPost(`/projects/${encodeURIComponent(projectId)}/snapshots`, payload, undefined, signal)
+
+/**
+ * POST /agent/query (Phase 17C) -- "Ask HRI", the deterministic
+ * intent/tool-routing query interface. See
+ * backend/app/routers/agent.py / app/agent/router.py. `projectId` is
+ * optional page context, used only when `message` itself doesn't name a
+ * project.
+ * @param {string} message
+ * @param {string|null} [projectId]
+ */
+export const askHRI = (message, projectId, signal) =>
+  apiPost('/agent/query', { message, project_id: projectId || undefined }, undefined, signal)

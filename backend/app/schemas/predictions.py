@@ -27,6 +27,18 @@ NON_TERMINAL_EXPLANATION = (
     "to generate a prediction from this snapshot's permitted predictor features."
 )
 
+# Phase 17B: returned instead of a raw 422 when a snapshot exists but a
+# full model input row genuinely cannot be built from it yet (e.g. a
+# newly created project with too little monthly history). Never a
+# fabricated or guessed prediction -- prediction_status="insufficient_data"
+# and every task result below is left empty.
+INSUFFICIENT_DATA_EXPLANATION = (
+    "There is not yet enough recorded data for this project at this reporting month "
+    "to build the full set of model input features. No prediction has been "
+    "generated -- add further monthly progress updates, or select a reporting month "
+    "that already has a complete snapshot."
+)
+
 
 class SignificantDelayResult(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
@@ -70,7 +82,7 @@ class PredictionResponse(BaseModel):
     project_id: str
     reporting_month: str
     is_terminal_snapshot: bool
-    prediction_status: Literal["actual_outcome", "model_prediction"]
+    prediction_status: Literal["actual_outcome", "model_prediction", "insufficient_data"]
     is_model_prediction: bool
     explanation: str
     synthetic_data_disclaimer: str

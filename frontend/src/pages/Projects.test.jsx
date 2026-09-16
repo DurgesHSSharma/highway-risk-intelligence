@@ -1,9 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import Projects from './Projects'
 import { ProjectsCacheProvider } from '../context/ProjectsCacheContext'
-import { listProjects } from '../api/endpoints'
+import { archiveProject, listProjects, reactivateProject } from '../api/endpoints'
 
 // Phase 13: Projects search moved from a client-side filter over a
 // pre-fetched full project list to real backend search (GET /projects?q=).
@@ -12,19 +12,24 @@ import { listProjects } from '../api/endpoints'
 // backend/tests/test_projects_api.py for the real SQL-level search tests.
 vi.mock('../api/endpoints', () => ({
   listProjects: vi.fn(),
+  archiveProject: vi.fn(),
+  reactivateProject: vi.fn(),
 }))
 
 const PROJECTS = [
-  { project_id: 'HRI-0006', project_name: 'Delhi-Dehradun Expressway', state: 'Uttarakhand', project_type: 'Expressway', contractor: 'ACME', project_length_km: 210.4, original_contract_value_inr_cr: 4500, current_status: 'Completed' },
-  { project_id: 'HRI-0019', project_name: 'Bangalore-Chennai Expressway', state: 'Karnataka', project_type: 'Expressway', contractor: 'BuildCo', project_length_km: 262.0, original_contract_value_inr_cr: 5200, current_status: 'Completed' },
-  { project_id: 'HRI-0023', project_name: 'Amritsar-Jamnagar Expressway', state: 'Rajasthan', project_type: 'Expressway', contractor: 'RoadWorks', project_length_km: 429.1, original_contract_value_inr_cr: 8300, current_status: 'Completed' },
+  { project_id: 'HRI-0006', project_name: 'Delhi-Dehradun Expressway', state: 'Uttarakhand', project_type: 'Expressway', contractor: 'ACME', project_length_km: 210.4, original_contract_value_inr_cr: 4500, current_status: 'Completed', is_archived: false },
+  { project_id: 'HRI-0019', project_name: 'Bangalore-Chennai Expressway', state: 'Karnataka', project_type: 'Expressway', contractor: 'BuildCo', project_length_km: 262.0, original_contract_value_inr_cr: 5200, current_status: 'Completed', is_archived: false },
+  { project_id: 'HRI-0023', project_name: 'Amritsar-Jamnagar Expressway', state: 'Rajasthan', project_type: 'Expressway', contractor: 'RoadWorks', project_length_km: 429.1, original_contract_value_inr_cr: 8300, current_status: 'Completed', is_archived: true },
 ]
 
 function renderProjects() {
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={['/projects']}>
       <ProjectsCacheProvider>
-        <Projects />
+        <Routes>
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/new" element={<div>add project page</div>} />
+        </Routes>
       </ProjectsCacheProvider>
     </MemoryRouter>
   )
@@ -40,6 +45,8 @@ function tableCalls() {
 beforeEach(() => {
   listProjects.mockReset()
   listProjects.mockResolvedValue({ items: PROJECTS, page: 1, page_size: 20, total: PROJECTS.length })
+  archiveProject.mockReset()
+  reactivateProject.mockReset()
 })
 
 describe('Projects page', () => {
@@ -143,5 +150,57 @@ describe('Projects page', () => {
     renderProjects()
 
     expect(await screen.findByText('Unable to load project data.')).toBeInTheDocument()
+  })
+
+  it('navigates to the Add Project page', async () => {
+    renderProjects()
+    await screen.findByText('HRI-0006')
+
+    fireEvent.click(screen.getByRole('button', { name: /add project/i }))
+
+    expect(await screen.findByText('add project page')).toBeInTheDocument()
+  })
+
+  it('sends is_archived to the backend when the lifecycle filter changes', async () => {
+    renderProjects()
+    await screen.findByText('HRI-0006')
+    listProjects.mockClear()
+
+    fireEvent.change(screen.getByLabelText('Lifecycle'), { target: { value: 'archived' } })
+
+    await waitFor(() => {
+      const call = tableCalls().find(([p]) => p.is_archived === true)
+      expect(call).toBeTruthy()
+    })
+  })
+
+  it('shows an Active/Archived badge per project', async () => {
+    renderProjects()
+    await screen.findByText('HRI-0006')
+
+    expect(screen.getAllByText('Active').length).toBe(2)
+    expect(screen.getByText('Archived')).toBeInTheDocument()
+  })
+
+  it('archives an active project and reloads the list', async () => {
+    archiveProject.mockResolvedValue({ project_id: 'HRI-0006', is_archived: true })
+    renderProjects()
+    await screen.findByText('HRI-0006')
+    listProjects.mockClear()
+
+    fireEvent.click(screen.getByLabelText('Archive HRI-0006'))
+
+    await waitFor(() => expect(archiveProject).toHaveBeenCalledWith('HRI-0006'))
+    await waitFor(() => expect(listProjects).toHaveBeenCalled())
+  })
+
+  it('reactivates an archived project', async () => {
+    reactivateProject.mockResolvedValue({ project_id: 'HRI-0023', is_archived: false })
+    renderProjects()
+    await screen.findByText('HRI-0023')
+
+    fireEvent.click(screen.getByLabelText('Reactivate HRI-0023'))
+
+    await waitFor(() => expect(reactivateProject).toHaveBeenCalledWith('HRI-0023'))
   })
 })

@@ -110,10 +110,22 @@ def list_projects(
     state: str | None = Query(None),
     project_type: str | None = Query(None),
     project_status: str | None = Query(None, description="Filters on each project's latest snapshot status."),
+    is_archived: bool | None = Query(
+        None,
+        description=(
+            "Phase 17B: filter on archived state. Omit (default) to return both active and "
+            "archived projects unchanged from the pre-Phase-17B behavior."
+        ),
+    ),
     db: Session = Depends(get_db),
 ) -> ProjectListResponse:
     status_subq = _current_status_subquery()
-    base = select(Project, status_subq.c.current_status).join(
+    # LEFT OUTER (not INNER): a just-created USER_ENTERED project has zero
+    # snapshots until its first monthly update, and must still be listed
+    # (with current_status "Unknown", mirroring get_project's own
+    # `latest_snapshot or "Unknown"` fallback below) rather than silently
+    # disappearing from this endpoint until then.
+    base = select(Project, status_subq.c.current_status).outerjoin(
         status_subq, Project.project_id == status_subq.c.project_id
     )
 
@@ -126,6 +138,8 @@ def list_projects(
         base = base.where(Project.project_type == project_type)
     if project_status is not None:
         base = base.where(status_subq.c.current_status == project_status)
+    if is_archived is not None:
+        base = base.where(Project.is_archived == is_archived)
 
     total = db.execute(select(func.count()).select_from(base.subquery())).scalar_one()
 
@@ -133,7 +147,7 @@ def list_projects(
     rows = db.execute(paged).all()
 
     items = [
-        ProjectOut.model_validate({**vars(project), "current_status": current_status})
+        ProjectOut.model_validate({**vars(project), "current_status": current_status or "Unknown"})
         for project, current_status in rows
     ]
     return ProjectListResponse(items=items, page=page, page_size=page_size, total=total)

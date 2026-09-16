@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useProjectsCache } from '../context/ProjectsCacheContext'
 import { useApi } from '../hooks/useApi'
-import { listProjects } from '../api/endpoints'
+import { archiveProject, listProjects, reactivateProject } from '../api/endpoints'
 import AsyncSection from '../components/StateViews'
 import Pagination from '../components/Pagination'
 import RiskBadge from '../components/RiskBadge'
-import { IconEye, IconSearch, IconX } from '../components/icons'
+import { IconArchive, IconEdit, IconEye, IconPlus, IconSearch, IconX } from '../components/icons'
 import { formatNumber } from '../utils/format'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50]
@@ -14,17 +14,21 @@ const SEARCH_DEBOUNCE_MS = 300
 
 export default function Projects() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   // The free-text query is debounced before it becomes a real backend
   // request, so fast typing doesn't fire a request per keystroke; every
-  // other control (state/type/status/page size) takes effect immediately.
+  // other control (state/type/status/archived/page size) takes effect
+  // immediately.
   const [query, setQuery] = useState(searchParams.get('q') || '')
   const [debouncedQuery, setDebouncedQuery] = useState(query)
   const [state, setState] = useState('')
   const [projectType, setProjectType] = useState('')
   const [projectStatus, setProjectStatus] = useState('')
+  const [archivedFilter, setArchivedFilter] = useState('') // '', 'active', 'archived'
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const [actionState, setActionState] = useState({ projectId: null, status: 'idle', error: null })
 
   // Resets to page 1 in the SAME state update as the debounced query
   // change (React batches both) rather than in a separate effect reacting
@@ -63,10 +67,11 @@ export default function Projects() {
           state,
           project_type: projectType,
           project_status: projectStatus,
+          is_archived: archivedFilter === '' ? undefined : archivedFilter === 'archived',
         },
         signal
       ),
-    [page, pageSize, debouncedQuery, state, projectType, projectStatus]
+    [page, pageSize, debouncedQuery, state, projectType, projectStatus, archivedFilter]
   )
 
   function handleQueryChange(value) {
@@ -75,6 +80,21 @@ export default function Projects() {
     if (value) next.set('q', value)
     else next.delete('q')
     setSearchParams(next, { replace: true })
+  }
+
+  async function handleToggleArchive(project) {
+    setActionState({ projectId: project.project_id, status: 'loading', error: null })
+    try {
+      if (project.is_archived) {
+        await reactivateProject(project.project_id)
+      } else {
+        await archiveProject(project.project_id)
+      }
+      setActionState({ projectId: null, status: 'idle', error: null })
+      result.reload()
+    } catch (err) {
+      setActionState({ projectId: project.project_id, status: 'error', error: err })
+    }
   }
 
   const items = result.data?.items ?? []
@@ -86,6 +106,11 @@ export default function Projects() {
         <div>
           <h1>Projects</h1>
           <p>Browse, search, and filter every project in the portfolio. Search and filters run on the HRI backend.</p>
+        </div>
+        <div className="page-header-actions">
+          <button type="button" className="btn btn-primary" onClick={() => navigate('/projects/new')}>
+            <IconPlus size={15} /> Add Project
+          </button>
         </div>
       </div>
 
@@ -176,6 +201,22 @@ export default function Projects() {
             </select>
           </div>
           <div className="field">
+            <label htmlFor="filter-archived">Lifecycle</label>
+            <select
+              id="filter-archived"
+              className="select"
+              value={archivedFilter}
+              onChange={(e) => {
+                setArchivedFilter(e.target.value)
+                setPage(1)
+              }}
+            >
+              <option value="">Active + archived</option>
+              <option value="active">Active only</option>
+              <option value="archived">Archived only</option>
+            </select>
+          </div>
+          <div className="field">
             <label htmlFor="page-size">Rows per page</label>
             <select
               id="page-size"
@@ -219,6 +260,7 @@ export default function Projects() {
                       <th>Length (km)</th>
                       <th>Contract Value (Cr)</th>
                       <th>Status</th>
+                      <th>Lifecycle</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -239,9 +281,36 @@ export default function Projects() {
                           <RiskBadge level={p.current_status === 'Completed' ? 'low' : 'medium'} label={p.current_status} />
                         </td>
                         <td>
-                          <Link className="icon-btn" to={`/projects/${p.project_id}`} aria-label={`View ${p.project_id}`}>
-                            <IconEye size={15} />
-                          </Link>
+                          {p.is_archived ? (
+                            <span className="badge badge-neutral">Archived</span>
+                          ) : (
+                            <span className="badge badge-info">Active</span>
+                          )}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <Link className="icon-btn" to={`/projects/${p.project_id}`} aria-label={`View ${p.project_id}`}>
+                              <IconEye size={15} />
+                            </Link>
+                            <Link className="icon-btn" to={`/projects/${p.project_id}/edit`} aria-label={`Edit ${p.project_id}`}>
+                              <IconEdit size={15} />
+                            </Link>
+                            <button
+                              type="button"
+                              className="icon-btn"
+                              aria-label={p.is_archived ? `Reactivate ${p.project_id}` : `Archive ${p.project_id}`}
+                              title={p.is_archived ? 'Reactivate' : 'Archive'}
+                              disabled={actionState.projectId === p.project_id && actionState.status === 'loading'}
+                              onClick={() => handleToggleArchive(p)}
+                            >
+                              <IconArchive size={15} />
+                            </button>
+                          </div>
+                          {actionState.projectId === p.project_id && actionState.status === 'error' && (
+                            <div className="muted" style={{ fontSize: 11, color: 'var(--danger, #c0392b)' }}>
+                              {actionState.error?.message || 'Action failed.'}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}

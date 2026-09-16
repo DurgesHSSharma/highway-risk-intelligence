@@ -6,6 +6,10 @@ Idempotent -- safe to run more than once; each run clears and reloads both
 tables from the CSV (see backend/app/db/loader.py for the strategy
 rationale) rather than upserting, so re-running never creates duplicates.
 
+Phase 17B: this only ever clears/reloads `data_provenance == "SYNTHETIC"`
+rows. Any USER_ENTERED project created through the app's project lifecycle
+API is preserved untouched -- safe to run this after adding real projects.
+
 Usage (from repo root, using the existing backend/.venv):
     ./backend/.venv/Scripts/python.exe -m scripts.load_db
 
@@ -48,9 +52,13 @@ def _print_summary(summary: LoadSummary, orphans: int, duplicates: int) -> None:
     print(f"  unique projects: {summary.source_unique_projects:,}")
     print(f"  unique (project_id, reporting_month) pairs: {summary.source_unique_project_month_pairs:,}")
     print()
-    print("Loaded into database:")
+    print("Loaded into database (SYNTHETIC rows only):")
     print(f"  projects: {summary.projects_loaded:,}")
     print(f"  project_snapshots: {summary.snapshots_loaded:,}")
+    print()
+    print("Preserved USER_ENTERED rows (never touched by this loader):")
+    print(f"  projects: {summary.preserved_user_projects:,}")
+    print(f"  project_snapshots: {summary.preserved_user_snapshots:,}")
     print()
     if summary.excluded_rows:
         print(f"EXCLUDED {summary.excluded_rows} source row(s): {summary.excluded_reason}")

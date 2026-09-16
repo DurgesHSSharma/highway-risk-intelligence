@@ -2,13 +2,24 @@
 and the test suite.
 
 Strategy: **deterministic clear-and-reload**, not upsert. On every run, all
-existing `project_snapshots` then `projects` rows are deleted inside a
-single transaction and freshly reinserted from the source CSV. This is
-idempotent by construction (running it twice yields byte-identical row
-counts and content) and, for a prototype of this size (400 projects /
+existing SYNTHETIC `project_snapshots` then `projects` rows are deleted
+inside a single transaction and freshly reinserted from the source CSV.
+This is idempotent by construction (running it twice yields byte-identical
+row counts and content) and, for a prototype of this size (400 projects /
 8,740 snapshots), avoids the extra complexity and failure modes of a
 column-by-column upsert diff. See docs/API_AND_DATABASE.md "Loading
 process" for the full rationale.
+
+Phase 17B: this CSV only ever contains `data_provenance == "SYNTHETIC"`
+rows, but the database itself may also hold `USER_ENTERED` projects
+created through the project lifecycle API. Every clear-and-reload in this
+module is scoped to SYNTHETIC rows only -- a USER_ENTERED project, its
+snapshots, and its cached predictions are never deleted by this function,
+no matter how many times it's rerun. This closes what was previously a
+landmine: re-running this loader (something routine after any dataset/
+schema change) would otherwise silently destroy every manually-added
+project. See tests/test_loader_preserves_user_projects.py for the
+regression proof.
 """
 
 from __future__ import annotations
@@ -23,7 +34,16 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.db.base import create_all, engine as default_engine
-from app.db.models import Project, ProjectSnapshot, PortfolioPredictionCache
+from app.db.models import (
+    DATA_PROVENANCE_SYNTHETIC,
+    Project,
+    ProjectSnapshot,
+    PortfolioPredictionCache,
+)
+
+# The only provenance value this CSV-backed loader ever writes or clears.
+# A `USER_ENTERED` project (Phase 17B) is never touched by this module.
+SYNTHETIC_PROVENANCE = DATA_PROVENANCE_SYNTHETIC
 
 # Columns that are constant per project_id -- see app/db/models.py docstring
 # for the inspection this is based on and the two deliberate deviations
@@ -92,6 +112,10 @@ class LoadSummary:
     snapshots_loaded: int
     excluded_rows: int
     excluded_reason: str | None
+    # Phase 17B: USER_ENTERED rows this reload found and left untouched.
+    # Always 0 on a fresh/synthetic-only database.
+    preserved_user_projects: int = 0
+    preserved_user_snapshots: int = 0
 
     @property
     def reconciled(self) -> bool:
@@ -205,10 +229,16 @@ def load_database(
     csv_path: Path,
     bind: Engine | None = None,
 ) -> LoadSummary:
-    """Clear and reload `projects` + `project_snapshots` from `csv_path`.
+    """Clear and reload SYNTHETIC `projects` + `project_snapshots` from `csv_path`.
 
     Idempotent: calling this twice in a row against the same CSV produces
     identical row counts and content both times.
+
+    Phase 17B: scoped to `data_provenance == "SYNTHETIC"` throughout. Any
+    USER_ENTERED project (and its snapshots/cache rows) already in the
+    database is preserved exactly as-is -- counted and reported via
+    `LoadSummary.preserved_user_projects` / `preserved_user_snapshots`,
+    never deleted or reinserted.
     """
     bind = bind or default_engine
     create_all(bind=bind)
@@ -221,6 +251,10 @@ def load_database(
     project_rows = _build_project_rows(df)
     snapshot_rows = _build_snapshot_rows(df)
 
+    synthetic_project_ids = select(Project.project_id).where(
+        Project.data_provenance == SYNTHETIC_PROVENANCE
+    )
+
     session = Session(bind=bind)
     try:
         # Phase 14 added `portfolio_prediction_cache`, FK'd to
@@ -231,9 +265,21 @@ def load_database(
         # clearing it here is consistent with this function's existing
         # clear-and-reload philosophy. Callers are expected to re-run batch
         # scoring after reloading the database.
-        session.execute(delete(PortfolioPredictionCache))
-        session.execute(delete(ProjectSnapshot))
-        session.execute(delete(Project))
+        #
+        # Phase 17B: every delete below is scoped to SYNTHETIC projects only
+        # (the subquery above, evaluated against `projects` rows that still
+        # exist at this point in the transaction). A USER_ENTERED project,
+        # its snapshots, and any cached prediction for it are never reached
+        # by this function, however many times it's rerun.
+        session.execute(
+            delete(PortfolioPredictionCache).where(
+                PortfolioPredictionCache.project_id.in_(synthetic_project_ids)
+            )
+        )
+        session.execute(
+            delete(ProjectSnapshot).where(ProjectSnapshot.project_id.in_(synthetic_project_ids))
+        )
+        session.execute(delete(Project).where(Project.data_provenance == SYNTHETIC_PROVENANCE))
         session.flush()
 
         session.execute(insert(Project), project_rows)
@@ -247,8 +293,28 @@ def load_database(
 
     verify = Session(bind=bind)
     try:
-        n_projects = verify.execute(select(func.count()).select_from(Project)).scalar_one()
-        n_snapshots = verify.execute(select(func.count()).select_from(ProjectSnapshot)).scalar_one()
+        n_projects = verify.execute(
+            select(func.count())
+            .select_from(Project)
+            .where(Project.data_provenance == SYNTHETIC_PROVENANCE)
+        ).scalar_one()
+        n_snapshots = verify.execute(
+            select(func.count())
+            .select_from(ProjectSnapshot)
+            .join(Project, ProjectSnapshot.project_id == Project.project_id)
+            .where(Project.data_provenance == SYNTHETIC_PROVENANCE)
+        ).scalar_one()
+        n_user_projects = verify.execute(
+            select(func.count())
+            .select_from(Project)
+            .where(Project.data_provenance != SYNTHETIC_PROVENANCE)
+        ).scalar_one()
+        n_user_snapshots = verify.execute(
+            select(func.count())
+            .select_from(ProjectSnapshot)
+            .join(Project, ProjectSnapshot.project_id == Project.project_id)
+            .where(Project.data_provenance != SYNTHETIC_PROVENANCE)
+        ).scalar_one()
     finally:
         verify.close()
 
@@ -263,6 +329,8 @@ def load_database(
         snapshots_loaded=n_snapshots,
         excluded_rows=excluded,
         excluded_reason=None if excluded == 0 else "unspecified row exclusion -- investigate",
+        preserved_user_projects=n_user_projects,
+        preserved_user_snapshots=n_user_snapshots,
     )
 
 

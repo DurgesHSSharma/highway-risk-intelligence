@@ -7,8 +7,15 @@ passed straight through, never replaced by a value invented in the API.
 That is exercised implicitly by every non-terminal prediction test (real
 snapshots in this dataset do carry such NaNs). This file tests the other
 documented case: when a valid feature row genuinely cannot be constructed
-(e.g. a structurally required raw field is absent), the API must return a
-clear HTTP 422, never a 500 and never a silently-guessed value.
+(e.g. a structurally required raw field is absent), `build_predictor_row`
+itself must still raise a clear `FeatureConstructionError`, never silently
+guess a value.
+
+Phase 17B: at the API layer, that error is no longer surfaced as a raw
+422 -- it's an expected data-completeness state (most commonly a newly
+created project without enough monthly history yet), so
+GET /predict returns HTTP 200 with prediction_status="insufficient_data"
+and no populated task results instead (see app/routers/predictions.py).
 """
 
 from __future__ import annotations
@@ -44,7 +51,7 @@ def test_missing_required_structural_field_raises_feature_construction_error(db_
         build_predictor_row(db_session, NON_TERMINAL_PROJECT_ID, NON_TERMINAL_MONTH)
 
 
-def test_predict_endpoint_returns_422_when_feature_row_cannot_be_built(client, monkeypatch):
+def test_predict_endpoint_returns_insufficient_data_when_feature_row_cannot_be_built(client, monkeypatch):
     import app.routers.predictions as predictions_module
 
     def _raise(*args, **kwargs):
@@ -56,5 +63,12 @@ def test_predict_endpoint_returns_422_when_feature_row_cannot_be_built(client, m
         f"/projects/{NON_TERMINAL_PROJECT_ID}/predict",
         params={"reporting_month": NON_TERMINAL_MONTH},
     )
-    assert resp.status_code == 422
-    assert "simulated" in resp.json()["detail"]
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["prediction_status"] == "insufficient_data"
+    assert body["is_model_prediction"] is False
+    assert "simulated" in body["explanation"]
+    assert body["significant_delay"]["predicted_class"] is None
+    assert body["final_delay_days"]["predicted_final_delay_days"] is None
+    assert body["cost_overrun"]["predicted_class"] is None
+    assert body["final_cost_overrun_pct"]["predicted_final_cost_overrun_pct"] is None

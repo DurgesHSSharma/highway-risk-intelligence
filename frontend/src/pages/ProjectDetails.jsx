@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApi } from '../hooks/useApi'
 import { useProjectSnapshots } from '../hooks/useProjectSnapshots'
-import { getProject } from '../api/endpoints'
+import { archiveProject, getProject, reactivateProject } from '../api/endpoints'
+import { ApiError } from '../api/client'
 import { findSnapshot, latestSnapshot } from '../utils/snapshots'
-import AsyncSection, { EmptyState } from '../components/StateViews'
+import AsyncSection, { EmptyState, ErrorState } from '../components/StateViews'
 import RiskBadge from '../components/RiskBadge'
 import MonthSelect from '../components/MonthSelect'
 import ProgressBar from '../components/ProgressBar'
+import MonthlySnapshotForm from '../components/MonthlySnapshotForm'
 import { formatCrore, formatDate, formatDays, formatNumber, formatPercent, titleCase } from '../utils/format'
-import { IconRisk, IconSimulator } from '../components/icons'
+import { IconArchive, IconChat, IconEdit, IconPlus, IconRisk, IconSimulator } from '../components/icons'
 
 const DELAY_FACTORS = [
   ['land_acquisition_delay_days', 'Land Acquisition'],
@@ -30,12 +32,29 @@ export default function ProjectDetails() {
   const project = useApi((signal) => getProject(projectId, signal), [projectId])
   const snapshots = useProjectSnapshots(projectId)
   const [selectedMonth, setSelectedMonth] = useState(null)
+  const [archiveState, setArchiveState] = useState({ status: 'idle', error: null })
+  const [showUpdateForm, setShowUpdateForm] = useState(false)
 
   useEffect(() => {
     if (snapshots.data && snapshots.data.length > 0 && !selectedMonth) {
       setSelectedMonth(latestSnapshot(snapshots.data).reporting_month)
     }
   }, [snapshots.data, selectedMonth])
+
+  async function handleToggleArchive() {
+    setArchiveState({ status: 'loading', error: null })
+    try {
+      if (project.data?.is_archived) {
+        await reactivateProject(projectId)
+      } else {
+        await archiveProject(projectId)
+      }
+      setArchiveState({ status: 'idle', error: null })
+      project.reload()
+    } catch (err) {
+      setArchiveState({ status: 'error', error: err })
+    }
+  }
 
   if (project.status === 'error' && project.error?.status === 404) {
     return (
@@ -66,12 +85,28 @@ export default function ProjectDetails() {
               <p>
                 {p.highway_number} · {p.state} · {p.project_type} · {formatNumber(p.project_length_km, 1)} km
               </p>
-              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                 <RiskBadge level={p.current_status === 'Completed' ? 'low' : 'medium'} label={p.current_status} />
                 <span className="badge badge-neutral">{p.data_provenance}</span>
+                {p.is_archived ? (
+                  <span className="badge badge-neutral">Archived{p.archived_at ? ` (${formatDate(p.archived_at)})` : ''}</span>
+                ) : (
+                  <span className="badge badge-info">Active</span>
+                )}
               </div>
             </div>
             <div className="page-header-actions">
+              <button type="button" className="btn" onClick={() => navigate(`/projects/${projectId}/edit`)}>
+                <IconEdit size={15} /> Edit
+              </button>
+              <button
+                type="button"
+                className="btn"
+                disabled={archiveState.status === 'loading'}
+                onClick={handleToggleArchive}
+              >
+                <IconArchive size={15} /> {p.is_archived ? 'Reactivate' : 'Archive'}
+              </button>
               <button
                 type="button"
                 className="btn btn-primary"
@@ -86,10 +121,20 @@ export default function ProjectDetails() {
               >
                 <IconSimulator size={15} /> What-if Simulator
               </button>
+              <button type="button" className="btn" onClick={() => navigate(`/ask?project=${projectId}`)}>
+                <IconChat size={15} /> Ask HRI
+              </button>
             </div>
           </div>
         )}
       </AsyncSection>
+
+      {archiveState.status === 'error' && (
+        <ErrorState
+          title="Could not update this project's lifecycle state."
+          message={archiveState.error instanceof ApiError ? archiveState.error.message : 'Unexpected error.'}
+        />
+      )}
 
       {project.status === 'success' && (
         <>
@@ -125,6 +170,17 @@ export default function ProjectDetails() {
             </div>
           </div>
 
+          {showUpdateForm && (
+            <MonthlySnapshotForm
+              projectId={projectId}
+              onCancel={() => setShowUpdateForm(false)}
+              onSuccess={() => {
+                setShowUpdateForm(false)
+                snapshots.reload()
+              }}
+            />
+          )}
+
           <AsyncSection
             status={snapshots.status}
             error={snapshots.error}
@@ -133,17 +189,33 @@ export default function ProjectDetails() {
             loadingLabel="Loading monthly snapshots…"
             errorTitle="Unable to load monthly snapshots."
             isEmpty={(d) => d.length === 0}
-            emptyTitle="No monthly snapshots recorded for this project."
+            emptyTitle="Insufficient data for model assessment."
+            emptyMessage="This project has no monthly progress update yet, so HRI's model cannot build the input features it needs for a risk assessment. Add the first monthly update to make one possible."
+            emptyAction={
+              !showUpdateForm && (
+                <button type="button" className="btn btn-primary btn-sm" onClick={() => setShowUpdateForm(true)}>
+                  <IconPlus size={14} /> Add Monthly Update
+                </button>
+              )
+            }
           >
             {(snapshotList) => {
               const snapshot = findSnapshot(snapshotList, selectedMonth) || latestSnapshot(snapshotList)
               if (!snapshot) return null
+              const hasTerminal = snapshotList.some((s) => s.is_terminal_snapshot)
               return (
                 <>
                   <div className="card card-padded">
                     <div className="card-header">
                       <h2>Monthly Snapshot</h2>
-                      <MonthSelect snapshots={snapshotList} value={selectedMonth} onChange={setSelectedMonth} />
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <MonthSelect snapshots={snapshotList} value={selectedMonth} onChange={setSelectedMonth} />
+                        {!hasTerminal && !showUpdateForm && (
+                          <button type="button" className="btn btn-sm" onClick={() => setShowUpdateForm(true)}>
+                            <IconPlus size={14} /> Add Monthly Update
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {snapshot.is_terminal_snapshot && (
                       <div className="disclaimer-box" style={{ marginBottom: 14 }}>

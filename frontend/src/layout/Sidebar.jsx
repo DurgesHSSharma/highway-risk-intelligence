@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import Logo from '../components/Logo'
 import {
   IconAnalytics,
+  IconChat,
   IconDashboard,
   IconEye,
   IconInconsistency,
@@ -39,6 +40,7 @@ const NAV_ITEMS = [
   { to: '/inconsistencies', label: 'Inconsistencies', icon: IconInconsistency, isActive: (p) => p === '/inconsistencies' },
   { to: '/analytics', label: 'Analytics', icon: IconAnalytics, isActive: (p) => p === '/analytics' },
   { to: '/reports', label: 'Reports', icon: IconReports, isActive: (p) => p === '/reports' || p.startsWith('/reports/') },
+  { to: '/ask', label: 'Ask HRI', icon: IconChat, isActive: (p) => p === '/ask' },
 ]
 
 export default function Sidebar({ open, onNavigate }) {

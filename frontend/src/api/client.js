@@ -83,6 +83,10 @@ async function request(path, { method = 'GET', params, body, signal } = {}) {
 
 export const apiGet = (path, params, signal) => request(path, { method: 'GET', params, signal })
 export const apiPost = (path, body, params, signal) => request(path, { method: 'POST', params, body, signal })
+// Phase 17B: the only other mutating verb the project lifecycle endpoints
+// need (PATCH /projects/{id} for edit) -- no apiPut/apiDelete added since
+// nothing in the API uses them.
+export const apiPatch = (path, body, params, signal) => request(path, { method: 'PATCH', params, body, signal })
 
 // Phase 13: for binary (non-JSON) responses such as the PDF report endpoint.
 // Mirrors `request()`'s error handling (backend error bodies are still

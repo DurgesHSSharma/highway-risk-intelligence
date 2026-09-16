@@ -31,6 +31,7 @@ from __future__ import annotations
 
 from sqlalchemy import (
     Boolean,
+    CheckConstraint,
     Date,
     DateTime,
     Float,
@@ -42,6 +43,15 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+# The two `Project.data_provenance` values this app ever writes. SYNTHETIC
+# rows come only from scripts/load_db.py (the Phase 2 dataset); USER_ENTERED
+# rows come only from the Phase 17B project lifecycle API
+# (app/projects/lifecycle.py). Defined once here -- the schema's natural
+# home -- and imported everywhere else that needs to write or filter on it,
+# instead of each module re-declaring its own literal string.
+DATA_PROVENANCE_SYNTHETIC = "SYNTHETIC"
+DATA_PROVENANCE_USER_ENTERED = "USER_ENTERED"
 
 
 class Project(Base):
@@ -60,6 +70,17 @@ class Project(Base):
     planned_completion_date: Mapped[str] = mapped_column(Date, nullable=False)
     planned_duration_months: Mapped[int] = mapped_column(Integer, nullable=False)
 
+    # Phase 17B: project lifecycle. Archiving is non-destructive -- it never
+    # deletes the project or any of its snapshots/predictions (see
+    # app/projects/lifecycle.py) -- so history stays fully queryable for an
+    # archived project, it just stops being offered as "active" in default
+    # listings. `archived_at` is set exactly when `is_archived` is True and
+    # cleared on reactivation; that pairing is enforced by
+    # app/projects/lifecycle.py (the only code that ever writes these two
+    # columns), not by a DB constraint.
+    is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    archived_at: Mapped[str | None] = mapped_column(DateTime, nullable=True)
+
     snapshots: Mapped[list["ProjectSnapshot"]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
     )
@@ -69,6 +90,22 @@ class ProjectSnapshot(Base):
     __tablename__ = "project_snapshots"
     __table_args__ = (
         UniqueConstraint("project_id", "reporting_month", name="uq_project_reporting_month"),
+        # Phase 17B: the 4 outcome columns below are nullable (see their
+        # docstring) because a real, in-progress USER_ENTERED project has no
+        # known final outcome yet -- only a completed project does. This
+        # CHECK is a genuine DB-enforced invariant (not just a docstring
+        # promise) that a row marked terminal always carries all 4 real
+        # recorded outcomes: it cannot pass validation with is_terminal_snapshot
+        # true and any of them NULL. It does not and cannot verify that the
+        # values are *actually* recorded outcomes rather than predictions --
+        # that discipline lives in app/projects/lifecycle.py, the only write
+        # path for a USER_ENTERED terminal snapshot.
+        CheckConstraint(
+            "is_terminal_snapshot = 0 OR ("
+            "final_delay_days IS NOT NULL AND significant_delay IS NOT NULL AND "
+            "final_cost_overrun_pct IS NOT NULL AND cost_overrun IS NOT NULL)",
+            name="ck_terminal_outcomes_populated",
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -110,10 +147,18 @@ class ProjectSnapshot(Base):
     approval_delay_days: Mapped[float] = mapped_column(Float, nullable=False)
 
     is_terminal_snapshot: Mapped[bool] = mapped_column(Boolean, nullable=False, index=True)
-    final_delay_days: Mapped[int] = mapped_column(Integer, nullable=False)
-    significant_delay: Mapped[int] = mapped_column(Integer, nullable=False)
-    final_cost_overrun_pct: Mapped[float] = mapped_column(Float, nullable=False)
-    cost_overrun: Mapped[int] = mapped_column(Integer, nullable=False)
+    # Phase 17B: nullable. The SYNTHETIC dataset always knows these (the
+    # whole trajectory is simulated up front), so every SYNTHETIC row --
+    # terminal or not -- still has them populated exactly as before. A real
+    # USER_ENTERED project's non-terminal snapshot legitimately has no known
+    # final outcome; these stay NULL until the project is actually marked
+    # Completed with real recorded results (see app/projects/lifecycle.py
+    # and the ck_terminal_outcomes_populated CHECK above). Never populate
+    # these from a model prediction or a what-if simulation.
+    final_delay_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    significant_delay: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    final_cost_overrun_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    cost_overrun: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     project: Mapped["Project"] = relationship(back_populates="snapshots")
 

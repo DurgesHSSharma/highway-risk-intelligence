@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict
 
@@ -21,6 +21,8 @@ class ProjectOut(BaseModel):
     planned_completion_date: date
     planned_duration_months: int
     current_status: str
+    is_archived: bool
+    archived_at: datetime | None
 
 
 class ProjectListResponse(BaseModel):
@@ -69,7 +71,12 @@ class SnapshotOut(BaseModel):
     design_change_delay_days: float
     approval_delay_days: float
 
-    final_delay_days: int
-    significant_delay: int
-    final_cost_overrun_pct: float
-    cost_overrun: int
+    # Phase 17B: nullable -- None for a real, in-progress USER_ENTERED
+    # project's non-terminal snapshot (no known final outcome yet). Always
+    # populated for a terminal snapshot (DB-enforced, see
+    # ck_terminal_outcomes_populated in app/db/models.py) and for every
+    # SYNTHETIC row exactly as before.
+    final_delay_days: int | None
+    significant_delay: int | None
+    final_cost_overrun_pct: float | None
+    cost_overrun: int | None
