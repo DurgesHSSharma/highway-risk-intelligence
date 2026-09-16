@@ -20,16 +20,15 @@ from app.db.base import get_db
 from app.ml.features import FeatureConstructionError
 from app.reports.pdf_builder import build_report_pdf
 from app.reports.report_data import ProjectNotFoundError, SnapshotNotFoundError, build_report_data
+from app.validation import MONTH_DESCRIPTION, MONTH_PATTERN
 
 router = APIRouter(prefix="/projects", tags=["reports"])
-
-_MONTH_PATTERN = r"^\d{4}-\d{2}$"
 
 
 @router.get("/{project_id}/report.pdf")
 def get_project_report_pdf(
     project_id: str,
-    reporting_month: str = Query(..., pattern=_MONTH_PATTERN, description="YYYY-MM"),
+    reporting_month: str = Query(..., pattern=MONTH_PATTERN, description=MONTH_DESCRIPTION),
     db: Session = Depends(get_db),
 ) -> Response:
     try:

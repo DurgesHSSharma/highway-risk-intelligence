@@ -17,6 +17,7 @@ from app.db.base import get_db
 from app.db.models import Project, ProjectSnapshot
 from app.ml.features import FeatureConstructionError, build_predictor_row
 from app.ml.predict import predict_all_tasks
+from app.validation import MONTH_DESCRIPTION, MONTH_PATTERN
 from app.schemas.predictions import (
     NON_TERMINAL_EXPLANATION,
     SYNTHETIC_DATA_DISCLAIMER_ACTUAL,
@@ -35,7 +36,7 @@ router = APIRouter(prefix="/projects", tags=["predictions"])
 @router.get("/{project_id}/predict", response_model=PredictionResponse)
 def predict(
     project_id: str,
-    reporting_month: str = Query(..., description="YYYY-MM"),
+    reporting_month: str = Query(..., pattern=MONTH_PATTERN, description=MONTH_DESCRIPTION),
     db: Session = Depends(get_db),
 ) -> PredictionResponse:
     project = db.get(Project, project_id)

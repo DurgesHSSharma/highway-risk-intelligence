@@ -11,7 +11,7 @@ what-if scenario simulator, and an executive-style AI synthesis layer — all
 built under a strict **zero-cost constraint** (no paid APIs, no paid hosting,
 no paid datasets).
 
-## Status: Phase 15 complete (Decision Intelligence — Phase 11 + Phase 14 composition)
+## Status: Phase 16 complete (production readiness & quality gate)
 
 Phase 1 delivered the project skeleton: a FastAPI backend, a React/Vite
 frontend, and a verified health-check connection between them — see
@@ -448,6 +448,28 @@ full architecture, the exact portfolio-percentile definition, peer-group
 methodology, the real-data-derived peer-elevated-risk threshold, and real
 example responses (including a non-terminal, a terminal, and a CRITICAL
 -risk project).
+
+## Production readiness (Phase 16)
+
+A hardening and verification pass over Phases 1–15 — no new features, no
+ML/RAG rebuild, no database migration. Added: centralized structured
+logging (`backend/app/logging_config.py`, stdlib `logging`, no new
+dependency) and a centralized exception handler (`app/main.py`) so an
+unexpected error returns a safe, generic `application/json` `500`
+(never a traceback, file path, or internal detail) while normal
+404/422 behavior is unaffected; one shared `reporting_month` format
+validator (`app/validation.py`) applied consistently across every
+router that accepts it (previously only one of six did); three frontend
+sections' missing error/retry wiring fixed; one mobile (375px)
+horizontal-overflow regression on the Analytics page fixed
+(`.card { min-width: 0 }`). Database integrity, ML/RAG artifact
+resilience, the frontend API client, and the dependency tree were all
+separately audited and found already solid — see
+[docs/PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md) for the
+full audit, every fix's before/after reproduction, the documented
+security-baseline decision (no auth/rate-limiting/TrustedHost/HTTPS
+redirect for this local MVP — deferred to Phase 17), and the dependency
+audit results.
 
 ## Project layout
 

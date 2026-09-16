@@ -13,7 +13,7 @@ docs/PHASE_13.md for the full contract.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
@@ -21,6 +21,7 @@ from app.config import settings
 from app.db.base import get_db
 from app.db.models import Project, ProjectSnapshot
 from app.schemas.projects import ProjectListResponse, ProjectOut, SnapshotOut
+from app.validation import MONTH_DESCRIPTION, MONTH_PATTERN
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -169,7 +170,11 @@ def list_project_snapshots(project_id: str, db: Session = Depends(get_db)) -> li
 
 
 @router.get("/{project_id}/snapshots/{reporting_month}", response_model=SnapshotOut)
-def get_project_snapshot(project_id: str, reporting_month: str, db: Session = Depends(get_db)) -> SnapshotOut:
+def get_project_snapshot(
+    project_id: str,
+    reporting_month: str = Path(..., pattern=MONTH_PATTERN, description=MONTH_DESCRIPTION),
+    db: Session = Depends(get_db),
+) -> SnapshotOut:
     project = db.get(Project, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail=f"Project '{project_id}' not found.")

@@ -43,6 +43,7 @@ from app.schemas.decision_intelligence import (
     RiskPositioningOut,
     TaskDriverAlignmentOut,
 )
+from app.validation import MONTH_DESCRIPTION, MONTH_PATTERN
 from app.schemas.decision_support import (
     DisclaimersOut,
     DriverFeatureOut,
@@ -240,7 +241,7 @@ def _driver_alignment_out(result) -> list[TaskDriverAlignmentOut]:
 @router.get("/{project_id}/decision-intelligence", response_model=DecisionIntelligenceResponse)
 def decision_intelligence(
     project_id: str,
-    reporting_month: str = Query(..., description="YYYY-MM"),
+    reporting_month: str = Query(..., pattern=MONTH_PATTERN, description=MONTH_DESCRIPTION),
     db: Session = Depends(get_db),
 ) -> DecisionIntelligenceResponse:
     try:

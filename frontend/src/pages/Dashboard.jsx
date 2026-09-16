@@ -15,7 +15,7 @@ import { PALETTE } from '../utils/palette'
 
 export default function Dashboard() {
   const summary = useApi((signal) => getPortfolioSummary(signal), [])
-  const { projects, status: projectsStatus } = useProjectsCache()
+  const { projects, status: projectsStatus, error: projectsError, reload: reloadProjects } = useProjectsCache()
 
   const sampleProjects = useMemo(() => projects.slice(0, 6), [projects])
 
@@ -145,8 +145,11 @@ export default function Dashboard() {
         </div>
         <AsyncSection
           status={projectsStatus}
+          error={projectsError}
           data={sampleProjects}
+          onRetry={reloadProjects}
           loadingLabel="Loading projects…"
+          errorTitle="Unable to load projects."
           isEmpty={(d) => d.length === 0}
           emptyTitle="No projects found."
         >

@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.db.base import get_db
 from app.ml.features import FeatureConstructionError
+from app.validation import MONTH_DESCRIPTION, MONTH_PATTERN
 from app.schemas.predictions import SYNTHETIC_DATA_DISCLAIMER_MODEL
 from app.schemas.simulation import (
     TERMINAL_SIMULATION_REJECTION_MESSAGE,
@@ -41,7 +42,7 @@ router = APIRouter(prefix="/projects", tags=["simulation"])
 @router.post("/{project_id}/simulate", response_model=SimulationResponse)
 def simulate(
     project_id: str,
-    reporting_month: str = Query(..., description="YYYY-MM"),
+    reporting_month: str = Query(..., pattern=MONTH_PATTERN, description=MONTH_DESCRIPTION),
     overrides: dict[str, Any] = Body(
         default_factory=dict,
         description=(

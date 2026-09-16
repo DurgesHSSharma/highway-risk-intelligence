@@ -34,6 +34,7 @@ from app.schemas.decision_support import (
 )
 from app.schemas.documents import RetrievalResultOut
 from app.schemas.simulation import PredictionsBundle
+from app.validation import MONTH_DESCRIPTION, MONTH_PATTERN
 
 router = APIRouter(prefix="/projects", tags=["decision-support"])
 
@@ -41,7 +42,7 @@ router = APIRouter(prefix="/projects", tags=["decision-support"])
 @router.get("/{project_id}/risk-summary", response_model=RiskSummaryResponse)
 def risk_summary(
     project_id: str,
-    reporting_month: str = Query(..., description="YYYY-MM"),
+    reporting_month: str = Query(..., pattern=MONTH_PATTERN, description=MONTH_DESCRIPTION),
     db: Session = Depends(get_db),
 ) -> RiskSummaryResponse:
     try:

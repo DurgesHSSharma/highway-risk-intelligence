@@ -41,7 +41,7 @@ const TASK_LABELS = {
 
 export default function Analytics() {
   const summary = useApi((signal) => getPortfolioSummary(signal), [])
-  const { projects, status: projectsStatus } = useProjectsCache()
+  const { projects, status: projectsStatus, error: projectsError, reload: reloadProjects } = useProjectsCache()
 
   const overview = useApi((signal) => getPortfolioOverview(signal), [])
   const drivers = useApi((signal) => getPortfolioDrivers(signal), [])
@@ -398,8 +398,11 @@ export default function Analytics() {
         </div>
         <AsyncSection
           status={riskMatrix.status}
+          error={riskMatrix.error}
           data={riskMatrix.data}
+          onRetry={riskMatrix.reload}
           loadingLabel="Loading risk matrix…"
+          errorTitle="Unable to load risk matrix."
           isEmpty={(d) => d.cache_status === 'cache_unavailable' || d.items.length === 0}
           emptyTitle="No data available for the risk matrix."
         >
@@ -541,8 +544,11 @@ export default function Analytics() {
           <p className="muted" style={{ fontSize: 11.5 }}>Grouped by the reporting-month year of each project's latest non-terminal snapshot.</p>
           <AsyncSection
             status={trends.status}
+            error={trends.error}
             data={trends.data}
+            onRetry={trends.reload}
             loadingLabel="Loading trends…"
+            errorTitle="Unable to load trends."
             isEmpty={(d) => d.predicted_status === 'cache_unavailable' || d.predicted.length === 0}
             emptyTitle="Predicted trend unavailable."
             emptyMessage={trends.data?.predicted_message}
@@ -556,8 +562,11 @@ export default function Analytics() {
 
       <AsyncSection
         status={projectsStatus}
+        error={projectsError}
         data={projects}
+        onRetry={reloadProjects}
         loadingLabel="Loading project distributions…"
+        errorTitle="Unable to load project distributions."
         isEmpty={(d) => d.length === 0}
         emptyTitle="No project data available."
       >

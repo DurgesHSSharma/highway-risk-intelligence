@@ -1,0 +1,36 @@
+# Phase 16 hygiene fix: normalize text files to LF in the repository
+# regardless of the checking-out machine's `core.autocrlf` setting, so
+# Windows/Linux/Mac contributors get byte-identical tracked content for
+# source and data files (previously several committed CSV/JSON files
+# carried CRLF endings in the git object store itself -- not just a
+# working-tree artifact -- which this file and the accompanying index
+# renormalization fix; see docs/PRODUCTION_READINESS.md).
+#
+# `text=auto` lets Git's own content heuristic decide text vs. binary for
+# anything not explicitly listed below; `eol=lf` then normalizes any file
+# Git treats as text to LF on checkout. Binary artifacts are explicitly
+# marked `binary` (a shorthand for `-text -diff -merge`) so they are never
+# considered for EOL conversion.
+
+* text=auto eol=lf
+
+*.py text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
+*.md text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.svg text eol=lf
+*.ini text eol=lf
+*.txt text eol=lf
+*.example text eol=lf
+.gitignore text eol=lf
+
+# Binary artifacts -- never subject to EOL conversion.
+*.png binary
+*.joblib binary
+*.pdf binary
+*.npy binary
+*.faiss binary

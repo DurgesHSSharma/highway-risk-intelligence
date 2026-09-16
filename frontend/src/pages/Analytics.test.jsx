@@ -341,4 +341,32 @@ describe('Analytics page', () => {
     // take down the whole page.
     expect(await screen.findByText('Historical Performance')).toBeInTheDocument()
   })
+
+  // Phase 16 production-readiness fix: the Risk Matrix's own (higher-limit)
+  // fetch previously rendered a generic, retry-less error on failure even
+  // though it uses the same AsyncSection/useApi pattern as every other
+  // section on this page.
+  it('shows an error state with retry for the risk matrix, independent of the top-risk table', async () => {
+    getRiskProjects.mockImplementation((params) =>
+      params.limit === 100
+        ? Promise.reject(new ApiError('Unable to reach the HRI backend.', { status: 0 }))
+        : Promise.resolve(RISK_PROJECTS)
+    )
+    renderAnalytics()
+    expect(await screen.findByText('HRI-0328')).toBeInTheDocument()
+    expect(await screen.findByText('Unable to load risk matrix.')).toBeInTheDocument()
+    const errorBlock = screen.getByText('Unable to load risk matrix.').closest('[role="alert"]')
+    expect(within(errorBlock).getByRole('button', { name: /Retry/i })).toBeInTheDocument()
+  })
+
+  // Phase 16 production-readiness fix: the bottom project-distribution
+  // section (backed by ProjectsCacheContext, not its own useApi call)
+  // previously rendered a generic, retry-less error on failure.
+  it('shows an error state with retry for project distributions when the projects cache fails', async () => {
+    listProjects.mockRejectedValue(new ApiError('Unable to reach the HRI backend.', { status: 0 }))
+    renderAnalytics()
+    expect(await screen.findByText('Unable to load project distributions.')).toBeInTheDocument()
+    const errorBlock = screen.getByText('Unable to load project distributions.').closest('[role="alert"]')
+    expect(within(errorBlock).getByRole('button', { name: /Retry/i })).toBeInTheDocument()
+  })
 })

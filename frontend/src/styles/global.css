@@ -284,6 +284,13 @@ img {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  /* Phase 16 fix: a flex (.stack)/grid (.grid, .two-col-grid) item's default
+     min-width is its own content's min-content size, so a wide child (e.g.
+     an 8-column .data-table inside .table-scroll, as on the Segment
+     Analytics card) forced the whole page to scroll horizontally at narrow
+     viewports instead of scrolling only within .table-scroll's own
+     overflow-x. Same fix already applied to .app-main below. */
+  min-width: 0;
 }
 
 .card-padded {
