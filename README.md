@@ -442,7 +442,7 @@ announced features:
   deployment
 - A CI pipeline (test suite + lint on push)
 - Automated backend dependency CVE scanning (`pip-audit`)
-- Application screenshots / a recorded demo (see below)
+- Recorded demo / hosted deployment (optional future work)
 - A license decision (see [License](#license--disclaimer))
 - Expanding Ask HRI's what-if natural-language whitelist beyond its
   current fixed set of recognized concepts
@@ -453,12 +453,31 @@ Phase 17 complete at commit `c368a3d4ef6c8b2b90a6e8a8305b1908a17870b5`
 (project lifecycle management + Ask HRI deterministic query agent). Runs
 locally only — no deployment, no configured remote, no live demo.
 
-### Screenshots / Demo
+### Screenshots
 
-No application screenshots or recorded demo currently exist in this
-repository. Screenshots can be added in a future update once the UI is
-considered release-ready for that purpose; none are included here rather
-than fabricated.
+No live demo or deployment exists — the screenshots below are captured
+from the application running locally against the synthetic prototype
+dataset described in [Data & Provenance](#data--provenance).
+
+#### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
+*Portfolio overview and recorded project outcomes.*
+
+#### Decision Intelligence
+![Decision Intelligence](docs/screenshots/decision-intelligence.png)
+*Project-level risk analysis with portfolio context and evidence.*
+
+#### What-if Simulator
+![What-if Simulator](docs/screenshots/what-if-simulator.png)
+*Hypothetical scenario re-scoring under user-defined overrides.*
+
+#### Document Search
+![Document Search](docs/screenshots/document-search.png)
+*Citation-grounded retrieval from the project's document corpus.*
+
+#### Ask HRI
+![Ask HRI](docs/screenshots/ask-hri.png)
+*Deterministic project-intelligence query router over HRI data and tools.*
 
 ## License & Disclaimer
 
