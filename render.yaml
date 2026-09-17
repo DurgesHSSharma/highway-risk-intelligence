@@ -1,0 +1,39 @@
+# Render Blueprint for the HRI FastAPI backend (free tier).
+#
+# Deploy: in the Render dashboard, "New +" -> "Blueprint" -> connect this
+# repo. Render detects this file automatically. (A manual Web Service can
+# also be configured with the same buildCommand/startCommand/envVars below.)
+#
+# The SQLite database and the portfolio-analytics cache are re-seeded from
+# the committed synthetic dataset and model artifacts on every boot
+# (idempotent clear-and-reload -- see scripts/load_db.py and
+# scripts/batch_score_portfolio.py), so the service comes up populated even
+# on Render's free-tier ephemeral filesystem. Any project/snapshot a visitor
+# creates through the live app's lifecycle-management feature will NOT
+# persist across a restart/redeploy on this tier -- there is no persistent
+# disk on the free plan.
+services:
+  - type: web
+    name: hri-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: >-
+      python -m scripts.load_db &&
+      python -m scripts.batch_score_portfolio &&
+      cd backend &&
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      # This project is tested against 3.11-3.12 (see README "Quick Start").
+      # Render's default Python version changes over time, so pin explicitly
+      # rather than inherit whatever the platform currently defaults to.
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: APP_ENV
+        value: production
+      # Set to the deployed Vercel origin after the frontend is deployed,
+      # e.g. ["https://hri-frontend.vercel.app"]. Left unset here
+      # deliberately (sync: false) so it is entered in the Render dashboard,
+      # never hardcoded/committed.
+      - key: CORS_ORIGINS
+        sync: false
