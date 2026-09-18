@@ -19,7 +19,7 @@ from app.rag.config import (
     METADATA_PATH,
     RELEVANCE_THRESHOLD,
 )
-from app.rag.embedding_model import embed_texts
+from app.rag.query_embedding_cache import embed_query
 
 
 class RagIndexNotBuiltError(RuntimeError):
@@ -79,7 +79,9 @@ class RetrievalService:
         if top_k < 1:
             raise InvalidQueryError("top_k must be at least 1.")
 
-        query_embedding = embed_texts([query])
+        # A stored vector for the fixed evidence-query strings, otherwise the live
+        # model (lazy-loaded) -- see app/rag/query_embedding_cache.py.
+        query_embedding = embed_query(query)
         k = min(top_k, self._index.ntotal)
         scores, indices = self._index.search(query_embedding, k)
 

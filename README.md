@@ -298,6 +298,7 @@ parameters, and output:
 | `-m scripts.explain_models` | Global SHAP artifacts | [docs/SHAP_EXPLAINABILITY_REPORT.md](docs/SHAP_EXPLAINABILITY_REPORT.md) |
 | `-m scripts.ingest_documents` | Document chunk dataset | [docs/DOCUMENT_INGESTION.md](docs/DOCUMENT_INGESTION.md) |
 | `-m scripts.build_rag_index` | FAISS index + embeddings | [docs/RAG_SYSTEM.md](docs/RAG_SYSTEM.md) |
+| `-m scripts.build_query_embedding_cache` | Fixed evidence-query embedding cache (`rag_index/fixed_query_embeddings.json`) | [script docstring](scripts/build_query_embedding_cache.py) |
 | `-m scripts.batch_score_portfolio` | Portfolio prediction cache | [docs/ADVANCED_ANALYTICS.md](docs/ADVANCED_ANALYTICS.md) |
 
 ## Testing
@@ -320,8 +321,8 @@ Most recently verified results (current commit):
 
 | Suite | Result |
 |---|---|
-| Root | 162 passed, 0 failed, 0 skipped |
-| Backend | 538 passed, 0 failed, 0 skipped |
+| Root | 166 passed, 0 failed, 0 skipped |
+| Backend | 563 passed, 0 failed, 0 skipped |
 | Frontend | 100 passed, 0 failed |
 | Frontend production build | Succeeded |
 
@@ -431,6 +432,51 @@ HTTPS redirection, or a CI pipeline. **This hardening pass improves code
 quality and failure behavior; it is not a claim of production deployment,
 security certification, or real-world validation.**
 
+## Deployment
+
+A free-tier **portfolio/demo deployment** is configured:
+
+| Component | Host | URL |
+|---|---|---|
+| Frontend (React + Vite) | Vercel | https://highway-risk-intelligence.vercel.app |
+| Backend (FastAPI) | Render (free web service) | https://highway-risk-intelligence.onrender.com |
+
+Configuration lives in the repository: [render.yaml](render.yaml) (Render
+Blueprint for the backend) and [frontend/vercel.json](frontend/vercel.json)
+(single-page-app rewrite for the frontend). The frontend reads its API base
+URL from `VITE_API_BASE_URL` at build time; the backend's allowed origins
+come from the `CORS_ORIGINS` environment variable.
+
+- **Free tier only.** No paid APIs, paid LLMs, paid hosting, paid datasets,
+  or custom domain are required — the URLs above are the platforms'
+  free-tier subdomains.
+- **Persistence is ephemeral.** The backend uses SQLite on Render's
+  free-tier ephemeral filesystem. Each boot reloads the synthetic dataset
+  and rebuilds the portfolio-analytics cache from committed artifacts, so
+  the service starts populated — but any project or snapshot created
+  through the hosted app is **not persisted** across a restart, redeploy,
+  or free-tier spin-down (the free plan has no persistent disk).
+- **Free-tier runtime constraints.** Render's free web service is
+  documented at 0.1 CPU and 512 MB RAM, and spins down after a period of
+  inactivity, so the first request after idle can be slow while the
+  backend restarts and re-seeds. The most memory-intensive operation in
+  the backend is loading the local embedding model, which happens on the
+  first free-text document query (document search, Ask HRI document
+  questions) and adds roughly 300 MB to the process when measured on a
+  local Windows machine — so on the free tier that query may be slow or
+  fail. Report, risk-summary, and decision-intelligence flows use
+  precomputed evidence-query embeddings and do not load it. Availability
+  and performance of the hosted demo are therefore not guaranteed.
+- **Demo, not production.** This is a portfolio/demo deployment, **not** a
+  production deployment or a security/validation certification. It
+  inherits every item under [Limitations](#limitations) — including no
+  authentication or rate limiting — and its seeded data is the synthetic
+  prototype dataset described in [Data & Provenance](#data--provenance).
+- **The repository and local setup remain authoritative.** The test
+  results and verification described in this README were obtained with the
+  local setup in [Quick Start](#quick-start); the hosted demo is a
+  convenience deployment and is not covered by them.
+
 ## Roadmap
 
 Items below are genuine, currently-deferred work — not commitments or
@@ -442,7 +488,6 @@ announced features:
   deployment
 - A CI pipeline (test suite + lint on push)
 - Automated backend dependency CVE scanning (`pip-audit`)
-- Recorded demo / hosted deployment (optional future work)
 - A license decision (see [License](#license--disclaimer))
 - Expanding Ask HRI's what-if natural-language whitelist beyond its
   current fixed set of recognized concepts
@@ -450,14 +495,17 @@ announced features:
 ## Project Status
 
 Phase 17 complete at commit `c368a3d4ef6c8b2b90a6e8a8305b1908a17870b5`
-(project lifecycle management + Ask HRI deterministic query agent). Runs
-locally only — no deployment, no configured remote, no live demo.
+(project lifecycle management + Ask HRI deterministic query agent). A
+free-tier portfolio/demo deployment (Vercel frontend + Render backend) is
+also configured — see [Deployment](#deployment). The repository and local
+setup ([Quick Start](#quick-start)) remain authoritative.
 
 ### Screenshots
 
-No live demo or deployment exists — the screenshots below are captured
-from the application running locally against the synthetic prototype
-dataset described in [Data & Provenance](#data--provenance).
+The screenshots below were captured locally against the synthetic
+prototype dataset described in [Data & Provenance](#data--provenance),
+while a free-tier deployment is also configured (see
+[Deployment](#deployment)).
 
 #### Dashboard
 ![Dashboard](docs/screenshots/dashboard.png)

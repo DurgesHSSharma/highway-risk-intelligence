@@ -44,4 +44,9 @@ EMBEDDINGS_PATH = RAG_INDEX_DIR / "embeddings.npy"
 
 DOCUMENT_CHUNKS_CSV_PATH = REPO_ROOT / "data" / "processed" / "document_chunks.csv"
 
+# Precomputed embeddings for the FIXED evidence-query strings (see
+# app/rag/query_embedding_cache.py) -- lets the report / risk-summary flows
+# retrieve evidence without loading the embedding model.
+FIXED_QUERY_EMBEDDINGS_PATH = RAG_INDEX_DIR / "fixed_query_embeddings.json"
+
 NOT_FOUND_MESSAGE = "Not found in the available documents."

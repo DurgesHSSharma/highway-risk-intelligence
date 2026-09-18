@@ -34,7 +34,6 @@ from typing import Literal
 
 import numpy as np
 import pandas as pd
-import shap
 
 from app.config import REPO_ROOT
 from app.ml.registry import TASK_MODEL_REGISTRY, get_model
@@ -178,6 +177,13 @@ def _build_background(preprocessor) -> np.ndarray:
 def _get_explainer(task_key: str):
     if task_key in _EXPLAINER_CACHE:
         return _EXPLAINER_CACHE[task_key]
+
+    # Imported lazily, not at module import: `import shap` pulls in numba, llvmlite
+    # and matplotlib (~50 MB resident, measured), which every process would
+    # otherwise pay for at startup -- including requests that never compute SHAP
+    # values (project lists, analytics, terminal-snapshot reports). Behavior is
+    # identical; only WHEN the import happens moves, to the first SHAP request.
+    import shap
 
     pipeline = get_model(task_key)
     model = pipeline.named_steps["model"]
